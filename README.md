@@ -6,4 +6,4 @@
 
 
 ## Resources
-* Resource_1:[here](help_assignment.pdf)
+* CBT Assignment(Chgogos):[here](help_assignment.pdf)
