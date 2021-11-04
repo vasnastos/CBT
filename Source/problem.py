@@ -12,6 +12,7 @@ from prettytable import PrettyTable,ALL
 import pandas as pd
 import pickle
 from Source.time_ import convert2timegap
+import termcolor
 
 class Timetable:
     available_semesters=[i for i in range(1,9)]
@@ -76,7 +77,7 @@ class Timetable:
         wb_obj=openpyxl.load_workbook(Timetable.dit_courses_old)
         sheet_obj=wb_obj.active
         total_rows=sheet_obj.max_row+1
-        total_column=sheet_obj.max_column+1
+        total_columns=sheet_obj.max_column+1
         start=True
         for i in range(1,total_rows):
             if start:
@@ -129,12 +130,12 @@ class Timetable:
             duration=int(end_hour)-int(start_hour)
             lecture_instance=Lecture(row[3].strip(),duration,self.classrooms[self.classrooms.index(row[4].strip())],self.lecturers[self.lecturers.index(row[5])])
             self.lectures.append(lecture_instance)
-            self.meetings.append(Meeting(autoincreament_id,data[0],data[1],row[0],self.courses[self.courses.index(row[2].strip()+"_"+str(row[6]))],int(row[6]),lecture_instance))
+            self.meetings.append(Meeting(autoincreament_id,data[0],data[1],row[0],self.courses[self.courses.index(row[2].strip()+"-"+str(row[6]))],int(row[6]),lecture_instance))
             autoincreament_id+=1
 
         self.split_to_semester()
-
-
+        self.courses_by_semester()
+    
     def split_to_semester(self):
         self.semester_info=list()
         for meeting in self.meetings:
@@ -144,6 +145,21 @@ class Timetable:
         for meeting in self.meetings:
             self.semester_info[self.semester_info.index(meeting.course.get_semester())].add_meeting(meeting)
 
+    def courses_by_semester(self):
+        for semester in self.semester_info:
+            if "-" in semester.id:
+                id_semester=semester.id.split("-")
+                csemester=int(id_semester[0])
+                cflow=id_semester[1]
+                for course in self.courses:
+                    if course.semester==csemester and course.flow==cflow:
+                        semester.add_course(course)
+            else:
+                csemester=int(semester.id)
+                for course in self.courses:
+                    if course.semester==csemester:
+                        semester.add_course(course)
+
     def print_semester_program(self,semester):
         table=PrettyTable()
         table.hrules=ALL
@@ -152,7 +168,7 @@ class Timetable:
         table.field_names=namefield
         widths={name:30 for name in namefield}
         table._max_width=widths
-        for timestamp in Semester.timezone:
+        for timestamp in Semester.timezones:
             row=list()
             start_time=int(timestamp.split('-')[0].split(':')[0])
             end_time=int(timestamp.split('-')[1].split(':')[0])
@@ -172,7 +188,7 @@ class Timetable:
         header=['  ']
         header.extend(Semester.days)
         semester_schedule={h:list() for h in header}
-        for timestamp in Semester.timezone:
+        for timestamp in Semester.timezones:
             row=list()
             start_time=int(timestamp.split('-')[0].split(':')[0])
             end_time=int(timestamp.split('-')[1].split(':')[0])
@@ -199,11 +215,10 @@ class Timetable:
         excelwriter=pd.ExcelWriter(os.path.join(path_to_xlsx,name_of_xlsx_file))
         df.to_excel(excelwriter)
         excelwriter.save()
-        
-            
 
-    
-    def show_by_semester(self):
+    def validate_lessons_per_semester(self):
         for semester in self.semester_info:
-            print(semester)
-
+            validate_semester=semester.semester_validance()
+            color="green" if validate_semester else "red"
+            termcolor.cprint(semester.id+":"+str(len(semester.courses))+" courses",color)
+            

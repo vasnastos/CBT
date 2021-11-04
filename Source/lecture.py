@@ -48,7 +48,7 @@ class Lecture:
     def string2Ltype(name:str)->LType:
         if name=="ΔΙΑΛΕΞΗ":
             return LType.THEORY
-        elif name=='ΦΡΟΝΤΗΣΤΗΡΙΟ':
+        elif name=='ΦΡΟΝΤΙΣΤΗΡΙΟ':
             return LType.PRIVATE_TUTORING
         elif name=="ΕΡΓΑΣΤΗΡΙΟ":
             return LType.LABORATORY
@@ -61,6 +61,6 @@ class Lecture:
         elif self.ltype==LType.LABORATORY:
             return "ΕΡΓΑΣΤΗΡΙΟ"
         elif self.ltype==LType.PRIVATE_TUTORING:
-            return "ΦΡΟΝΤΗΣΤΗΡΙΟ"
+            return "ΦΡΟΝΤΙΣΤΗΡΙΟ"
         else:
             return "ΑΣΚΗΣΗ ΠΡΑΞΗΣ"

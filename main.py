@@ -28,6 +28,10 @@ def store_schedule_scenario():
     for semester in semesters:
         p.export_semester_program(semester)
 
+def semester_validation():
+    p=Timetable("DIT CBT")
+    p.import_full_dit_schedule()
+    p.validate_lessons_per_semester()
+
 if __name__=='__main__':
-    store_schedule_scenario()
-    # main()
+    semester_validation()

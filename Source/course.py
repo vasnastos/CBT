@@ -1,12 +1,12 @@
 class Course:
-    def __init__(self,c_id,c_title,c_semester,c_flow,c_hours_theory,c_hours_tutoring,c_hours_lab,c_credits):
+    def __init__(self,c_id,c_title,c_semester,c_flow,c_hours_theory,c_hours_lab,c_hours_tutoring,c_credits):
         self.id=c_id
         self.title=c_title.strip()
-        self.semester=c_semester
+        self.semester=int(c_semester)
         self.flow=c_flow
-        self.hours_theory=c_hours_theory
-        self.hours_tutoring=c_hours_tutoring
-        self.hours_lab=c_hours_lab
+        self.theory_hours=c_hours_theory
+        self.tutoring_hours=c_hours_tutoring
+        self.lab_hours=c_hours_lab
         self.credits=c_credits
         self.enrollments=0
         self.course_list=list()
@@ -24,8 +24,17 @@ class Course:
             self.id=0
             raise StopIteration
     
+    def __hash__(self) -> str:
+        self.title+"_"+str(self.semester)
+
+    def get_title(self):
+        return self.title+"_"+str(self.semester)
+
     def __eq__(self,oth):
-        return self.title+"_"+str(self.semester)==oth
+        return self.title+"-"+str(self.semester)==oth
+    
+    def equals(self,oth):
+        return self.title==oth.title and self.semester==oth.semester
 
     def get_semester(self):
         if self.flow=="-": return str(self.semester)

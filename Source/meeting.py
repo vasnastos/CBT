@@ -10,6 +10,9 @@ class Meeting:
         self.day=m_day
         self.course=m_course
         self.semester=m_semester
+        end_int_hour=int(self.end_hour.split(':')[0])
+        start_int_hour=int(self.start_hour.split(':')[0])
+        self.duration=end_int_hour-start_int_hour
         self.lecture=m_lecture
 
     def __iter__(self):
