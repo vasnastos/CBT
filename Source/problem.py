@@ -9,17 +9,11 @@ import json
 import openpyxl
 import csv
 from prettytable import PrettyTable,ALL
+import pandas as pd
+import pickle
+from Source.time_ import convert2timegap
 
-def convert2timegap(duration):
-    time_lap=duration.split('-')
-    start_hour=time_lap[0]
-    finish_hour=time_lap[1]
-    starting_point=int(start_hour.split(':')[0])
-    finishing_pont=int(finish_hour.split(':')[0])
-    return starting_point,finishing_pont
-
-
-class Problem:
+class Timetable:
     available_semesters=[i for i in range(1,9)]
     dit_schedule=os.path.join('','dit_factors','full_dit_info.xlsx')
     dit_classrooms=os.path.join('','dit_factors','dit_classrooms.xlsx')
@@ -40,7 +34,7 @@ class Problem:
 
     def import_full_dit_schedule(self):
         # Read classrooms
-        wb_obj=openpyxl.load_workbook(Problem.dit_classrooms)
+        wb_obj=openpyxl.load_workbook(Timetable.dit_classrooms)
         sheet_obj=wb_obj.active
         total_rows=sheet_obj.max_row+1
         total_columns=sheet_obj.max_column+1
@@ -56,13 +50,13 @@ class Problem:
 
         # Read Lectures
         RF=None
-        with open(Problem.dit_teachers,'r') as f:
+        with open(Timetable.dit_teachers,'r') as f:
             RF=csv.reader(f)
             for name,rank,mail,id in RF:
                 self.lecturers.append(Lecturer(id,name,mail,rank))
 
         #Read Courses
-        wb_obj=openpyxl.load_workbook(Problem.dit_courses)
+        wb_obj=openpyxl.load_workbook(Timetable.dit_courses)
         sheet_obj=wb_obj.active
         total_rows=sheet_obj.max_row+1
         total_columns=sheet_obj.max_column+1
@@ -75,12 +69,11 @@ class Problem:
             for j in range(1,total_columns):
                 cell_obj=sheet_obj.cell(i,j)
                 row.append(cell_obj.value)
-            print(row)
             self.courses.append(Course(row[0],row[1],int(row[2]),row[3],int(row[4]),int(row[5]),int(row[6]),int(row[7])))
         del wb_obj
         del sheet_obj
 
-        wb_obj=openpyxl.load_workbook(Problem.dit_courses_old)
+        wb_obj=openpyxl.load_workbook(Timetable.dit_courses_old)
         sheet_obj=wb_obj.active
         total_rows=sheet_obj.max_row+1
         total_column=sheet_obj.max_column+1
@@ -93,14 +86,13 @@ class Problem:
             for j in range(1,total_columns):
                 cell_obj=sheet_obj.cell(i,j)
                 row.append(cell_obj.value)
-            print(row[1])
             self.courses.append(Course(row[0],row[1],int(row[2]),row[3],int(row[4]),int(row[5]),int(row[6]),int(row[7])))
 
         del wb_obj
         del sheet_obj
 
         #Read Extra lesson
-        wb_obj=openpyxl.load_workbook(Problem.dit_courses_extra)
+        wb_obj=openpyxl.load_workbook(Timetable.dit_courses_extra)
         sheet_obj=wb_obj.active
         total_rows=sheet_obj.max_row+1
         total_columns=sheet_obj.max_column+1
@@ -119,7 +111,7 @@ class Problem:
         del wb_obj
         del sheet_obj
         # Read Meetings
-        wb_obj=openpyxl.load_workbook(Problem.dit_schedule)
+        wb_obj=openpyxl.load_workbook(Timetable.dit_schedule)
         sheet_obj=wb_obj.active
         total_rows=sheet_obj.max_row+1
         total_columns=sheet_obj.max_column+1
@@ -175,4 +167,43 @@ class Problem:
                 row.append(meeting_schedule)
             table.add_row(row)
         print(table)
+    
+    def export_semester_program(self,semester):
+        header=['  ']
+        header.extend(Semester.days)
+        semester_schedule={h:list() for h in header}
+        for timestamp in Semester.timezone:
+            row=list()
+            start_time=int(timestamp.split('-')[0].split(':')[0])
+            end_time=int(timestamp.split('-')[1].split(':')[0])
+            row.append(timestamp)
+            for day in Semester.days:
+                meeting_schedule=""
+                for meeting in self.semester_info[self.semester_info.index(semester)].meetings[day]:
+                    meeting_start_time=int(meeting.start_hour.split(':')[0])
+                    meeting_end_time=int(meeting.end_hour.split(':')[0])
+                    if meeting_start_time<=start_time and meeting_end_time>=end_time:
+                        meeting_schedule+=meeting.description()+"\n"
+                row.append(meeting_schedule)
+            i=0
+            for h in header:
+                semester_schedule[h].append(row[i])
+                i+=1
+        name_of_pickle_file="dit_"+str(semester)+".pkl"
+        name_of_xlsx_file="dit_"+str(semester)+".xlsx"
+        path_to_serialize=os.path.join('','Schedule_Serialization')
+        path_to_xlsx=os.path.join('','Schedule_Xlsx')
+        with open(os.path.join(path_to_serialize,name_of_pickle_file),'wb') as WF:
+            pickle.dump(semester_schedule,WF)
+        df=pd.DataFrame(semester_schedule)
+        excelwriter=pd.ExcelWriter(os.path.join(path_to_xlsx,name_of_xlsx_file))
+        df.to_excel(excelwriter)
+        excelwriter.save()
+        
+            
+
+    
+    def show_by_semester(self):
+        for semester in self.semester_info:
+            print(semester)
 
