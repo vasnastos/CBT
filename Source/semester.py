@@ -15,6 +15,7 @@ class Semester:
         self.meetings_raw=list()
         self.courses=list()
         self.locked_timezones={day:set() for day in Semester.days}
+        self.semester_penalty=0
 
     def add_meeting(self,meeting):
         self.meetings[meeting.day].append(meeting)
@@ -74,10 +75,11 @@ class Semester:
             end_zone_time=int(zone_to_time[1].split(":")[0])
             if start_zone_time>=sh and end_zone_time<=eh:
                 self.locked_timezones[day].add(timezone) 
-        # import sys
-        # print(self.locked_timezones)
-        # sys.exit(0)
 
+    def compute_program_penalty(self):
+        semester_penalty=0
+        return semester_penalty
+        
     def export_semester_locked_timezones(self):
         workbook_path=os.path.join("","Schedule_Xlsx","marker_"+self.id+".xlsx")
         wb_obj=xlsxwriter.Workbook(workbook_path)

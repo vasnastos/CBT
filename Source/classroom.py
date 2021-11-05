@@ -3,6 +3,7 @@ class Classroom:
         self.id=c_id
         self.type=c_type
         self.capacity=c_capacity
+        self.locked=list()
     
     def __iter__(self):
         self.classroom_list=[self.id,self.capacity]
@@ -17,6 +18,18 @@ class Classroom:
             self.id=0
             raise StopIteration
     
+    def __eq__(self,oth) -> bool:
+        return self.id==oth
+
+    def add_course(self,course,timezone):
+        self.locked.append((course,timezone))
+
+    def move_to_timezone(self,course,timezone,exclude):
+        for classroom_rec in self.locked:
+            if classroom_rec in exclude: continue
+            if classroom_rec==(course,timezone): return False
+        return True
+
     def __str__(self):
         msg="Classroom Details\n"
         msg+="*"*8+"\n"
@@ -25,7 +38,6 @@ class Classroom:
         msg+="ΧΩΡΙΤΗΚΟΤΗΤΑ:{}".format(self.capacity)+"\n"
         return msg
 
-    def __eq__(self,oth) -> bool:
-        return self.id==oth
+    
 
     

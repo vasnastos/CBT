@@ -1,4 +1,7 @@
 from enum import Enum
+from prettytable import PrettyTable
+from prettytable.prettytable import ALL
+from Source.constant_vars import Constant
 
 class Rank(Enum):
     DEP=0
@@ -11,11 +14,11 @@ class Rank(Enum):
 
 class Lecturer:
     def __init__(self,l_id,l_name,l_mail,l_rank):
-        self.id=l_id
+        self.identifier=l_id
         self.name=l_name
         self.mail=l_mail
         self.rank=Lecturer.string2Rank(l_rank)
-        self.lectures=list()
+        self.lectures=dict()
     
     def __iter__(self):
         self.lecturer_list=[self.id,self.name,self.rank.name]
@@ -30,11 +33,16 @@ class Lecturer:
            self.id=0
            raise StopIteration
 
-    def add_course(self,lecture):
-        self.lectures.append(lecture)
+    def add_job(self,day,course,timezone):
+        if day not in self.lectures:
+            self.lectures[day]=dict()
+        self.lectures[day][timezone]=course
 
     def __eq__(self,othername):
-        return self.id==othername
+        return self.identifier==othername
+    
+    def equals(self,oth):
+        return self.identifier==oth.identifier
 
     def __str__(self):
        msg="ΑΝΑΓΝΩΡΙΣΤΙΚΟ:{}".format(self.id)+"\n"
@@ -58,6 +66,25 @@ class Lecturer:
         else:
             return Rank.TEACHING_ASSISTANT
     
+    def info(self):
+        table=PrettyTable()
+        table.hrules=ALL
+        fieldnames=[' ']
+        fieldnames.extend(Constant.days)
+        table.field_names=fieldnames
+        widths={name:30 for name in fieldnames}
+        table._max_width=widths
+        for timezone in Constant.timezones:
+            row=list()
+            row.append(timezone)
+            for day in Constant.days:
+                description=""
+                if day in self.lectures:
+                    if timezone in self.lectures[day]:
+                        description+=self.lectures[day][timezone]
+                row.append(description)
+            table.add_row(row)
+        print(table,end='\n\n')
 
 # TEST
 # l=Lecturer(190,"Christos Gkogkos",Rank.DEP)

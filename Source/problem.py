@@ -31,6 +31,7 @@ class Timetable:
         self.meetings=list()
         self.courses=list()
         self.semester_info=list()
+        self.ignore_info=list()
 
 
     def import_full_dit_schedule(self):
@@ -53,7 +54,11 @@ class Timetable:
         RF=None
         with open(Timetable.dit_teachers,'r') as f:
             RF=csv.reader(f)
+            start=True
             for name,rank,mail,id in RF:
+                if start:
+                    start=False
+                    continue
                 self.lecturers.append(Lecturer(id,name,mail,rank))
 
         #Read Courses
@@ -92,7 +97,7 @@ class Timetable:
         del wb_obj
         del sheet_obj
 
-        #Read Extra lesson
+        #Read Extra lessons
         wb_obj=openpyxl.load_workbook(Timetable.dit_courses_extra)
         sheet_obj=wb_obj.active
         total_rows=sheet_obj.max_row+1
@@ -133,19 +138,22 @@ class Timetable:
             self.meetings.append(Meeting(autoincreament_id,data[0],data[1],row[0],self.courses[self.courses.index(row[2].strip()+"-"+str(row[6]))],int(row[6]),lecture_instance))
             autoincreament_id+=1
 
-        self.split_to_semester()
-        self.courses_by_semester()
-    
-    def split_to_semester(self):
+        self.create_schema()
+        
+    def create_schema(self):
+        # Split into semester and lecturers spliting
         self.semester_info=list()
         for meeting in self.meetings:
              if meeting.course.get_semester() in self.semester_info: 
                 continue
              self.semester_info.append(Semester(meeting.course.get_semester()))
+
         for meeting in self.meetings:
             self.semester_info[self.semester_info.index(meeting.course.get_semester())].add_meeting(meeting)
+            period_zones=meeting.timezone()
+            for zone in period_zones:
+                self.lecturers[self.lecturers.index(meeting.lecture.lecturer.identifier)].add_job(meeting.day,meeting.course.title,zone)
 
-    def courses_by_semester(self):
         for semester in self.semester_info:
             if "-" in semester.id:
                 id_semester=semester.id.split("-")
@@ -159,6 +167,8 @@ class Timetable:
                 for course in self.courses:
                     if course.semester==csemester:
                         semester.add_course(course)
+
+
 
     def print_semester_program(self,semester):
         table=PrettyTable()
@@ -221,4 +231,10 @@ class Timetable:
             validate_semester=semester.semester_validance()
             color="green" if validate_semester else "red"
             termcolor.cprint(semester.id+":"+str(len(semester.courses))+" courses",color)
+    
+    def export_program_by_lecturer(self,lecturer_identifier):
+        lecturer=self.lecturers[self.lecturers.index(lecturer_identifier)]
+        print(f'{lecturer.name}({lecturer.rank.name})')
+        lecturer.info()
+        
             
