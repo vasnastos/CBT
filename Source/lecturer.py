@@ -15,6 +15,7 @@ class Lecturer:
         self.name=l_name
         self.mail=l_mail
         self.rank=Lecturer.string2Rank(l_rank)
+        self.lectures=list()
     
     def __iter__(self):
         self.lecturer_list=[self.id,self.name,self.rank.name]
@@ -28,6 +29,9 @@ class Lecturer:
         except IndexError:
            self.id=0
            raise StopIteration
+
+    def add_course(self,lecture):
+        self.lectures.append(lecture)
 
     def __eq__(self,othername):
         return self.id==othername

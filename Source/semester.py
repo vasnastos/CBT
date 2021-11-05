@@ -1,4 +1,7 @@
+import termcolor
 from Source.lecture import LType
+import os
+import xlsxwriter
 
 class Semester:
     days=['ΔΕΥΤΕΡΑ','ΤΡΙΤΗ','ΤΕΤΑΡΤΗ','ΠΕΜΠΤΗ','ΠΑΡΑΣΚΕΥΗ']
@@ -11,7 +14,7 @@ class Semester:
             self.meetings[day]=list()
         self.meetings_raw=list()
         self.courses=list()
-        self.lock_timezones=set()
+        self.locked_timezones={day:set() for day in Semester.days}
 
     def add_meeting(self,meeting):
         self.meetings[meeting.day].append(meeting)
@@ -22,7 +25,8 @@ class Semester:
 
     def lock_timezones(self):
         for timezone in Semester.timezones:
-            pass
+            for meeting in self.meetings_raw:
+                self.get_lock_timezones(meeting.start_hour+"-"+meeting.end_hour,meeting.day)
     
     def course_validance(self,course):
         course_hours={
@@ -59,3 +63,54 @@ class Semester:
 
     def __eq__(self, o:str) -> bool:
         return self.id==o
+    
+    def get_lock_timezones(self,zone,day):
+        periods=zone.split('-')
+        sh=int(periods[0].split(':')[0])
+        eh=int(periods[1].split(':')[0])
+        for timezone in Semester.timezones:
+            zone_to_time=timezone.split("-")
+            start_zone_time=int(zone_to_time[0].split(":")[0])
+            end_zone_time=int(zone_to_time[1].split(":")[0])
+            if start_zone_time>=sh and end_zone_time<=eh:
+                self.locked_timezones[day].add(timezone) 
+        # import sys
+        # print(self.locked_timezones)
+        # sys.exit(0)
+
+    def export_semester_locked_timezones(self):
+        workbook_path=os.path.join("","Schedule_Xlsx","marker_"+self.id+".xlsx")
+        wb_obj=xlsxwriter.Workbook(workbook_path)
+        ws_obj=wb_obj.add_worksheet()
+        row=0
+        column=1
+        for day in Semester.days:
+            cell_format=wb_obj.add_format()
+            cell_format.set_bold()
+            ws_obj.write(row,column,day,cell_format)
+            column+=1
+        row=1    
+        column=0
+        for timezone in Semester.timezones:
+            cell_format=wb_obj.add_format()
+            cell_format.set_bold()
+            cell_format.set_rotation(10)
+            ws_obj.write(row,column,timezone,cell_format)
+            row+=1
+        
+        column=1
+        for day in Semester.days:
+            row=1
+            for timezone in Semester.timezones:
+                cell_format=wb_obj.add_format()
+                cell_format.set_bg_color('red') if timezone in self.locked_timezones[day] else cell_format.set_bg_color('green')
+                cell_format.set_bold()
+                text="VALID" if timezone not in self.locked_timezones[day] else "INVALID"
+                ws_obj.write(row,column,text,cell_format)
+                row+=1
+            column+=1
+        wb_obj.close()
+        print(termcolor.cprint(workbook_path,"green"))
+
+    
+        

@@ -33,5 +33,14 @@ def semester_validation():
     p.import_full_dit_schedule()
     p.validate_lessons_per_semester()
 
+def semester_markers():
+    p=Timetable("DIT CBT")
+    p.import_full_dit_schedule()
+    for semester in p.semester_info:
+        semester.lock_timezones()
+        print(semester.locked_timezones)
+        semester.export_semester_locked_timezones()
+
 if __name__=='__main__':
     semester_validation()
+    # semester_markers()
