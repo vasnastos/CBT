@@ -4,12 +4,10 @@ from Source.classroom import Classroom
 
 class Meeting:
     timezones=['08:00-09:00','09:00-10:00','10:00-11:00','11:00-12:00','12:00-13:00','13:00-14:00','14:00-15:00','15:00-16:00','16:00-17:00','17:00-18:00','18:00-19:00','19:00-20:00','20:00-21:00']
-    def __init__(self,m_id,m_start_hour,m_end_hour,m_day,m_course,m_semester,m_lecture):
-        self.id=m_id
+    def __init__(self,m_start_hour,m_end_hour,m_day,m_semester,m_lecture):
         self.start_hour=m_start_hour
         self.end_hour=m_end_hour
         self.day=m_day
-        self.course=m_course
         self.semester=m_semester
         end_int_hour=int(self.end_hour.split(':')[0])
         start_int_hour=int(self.start_hour.split(':')[0])
@@ -17,7 +15,7 @@ class Meeting:
         self.lecture=m_lecture
 
     def __iter__(self):
-        self.meeting_notes=[self.id,self.start_hour,self.end_hour,self.course]
+        self.meeting_notes=[self.id,self.start_hour,self.end_hour]
         self.meeting_notes.extend(list(iter(self.course)))
         self.meeting_notes.extend(list(iter(self.lecture)))
         self.id=-1
@@ -32,7 +30,7 @@ class Meeting:
             return StopIteration
     
     def description(self):
-        return self.course.description()+"\n"+self.lecture.lecturer.name+"\n"+self.lecture.Ltype2String()+"("+self.lecture.classroom.id+")\n"
+        return self.lecture.course.description()+"\n"+self.lecture.lecturer.name+"\n"+self.lecture.Ltype2String()+"("+self.lecture.classroom.id+")\n"
 
     def timezone(self):
         periods=list()
@@ -45,6 +43,18 @@ class Meeting:
             if zone_start_hour>=meeting_initial_hour and zone_end_hour<=meeting_end_hour:
                 periods.append(timezone)
         return periods
+    
+    def get_class_id(self):
+        return self.lecture.classroom.id
+    
+    def get_lecturer_id(self):
+        return self.lecture.lecturer.identifier
+    
+    def get_course_id(self):
+        return self.lecture.course.id
+
+    def get_semester(self):
+        return self.lecture.course.get_semester()
 
     def __str__(self):
         msg="ΑΝΑΓΝΩΡΙΣΤΙΚΟ:{}".format(self.id)+"\n"

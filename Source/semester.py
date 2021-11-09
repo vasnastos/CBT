@@ -37,7 +37,7 @@ class Semester:
         }
         lab_found=False
         for meeting in self.meetings_raw:
-            if meeting.course.equals(course):
+            if meeting.lecture.course.equals(course):
                 if meeting.lecture.ltype==LType.LABORATORY:
                     if lab_found==False:
                         course_hours[LType.LABORATORY]+=course.lab_hours

@@ -6,8 +6,8 @@ p.import_full_dit_schedule()
 def find_available_semesters():
     semesters=list()
     for meeting in p.meetings:
-        if meeting.course.get_semester() not in semesters:
-            semesters.append(meeting.course.get_semester())
+        if meeting.get_semester() not in semesters:
+            semesters.append(meeting.get_semester())
     return semesters
 
 def select_by_semester():

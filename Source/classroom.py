@@ -2,7 +2,7 @@ class Classroom:
     def __init__(self,c_id,c_type,c_capacity):
         self.id=c_id
         self.type=c_type
-        self.capacity=c_capacity
+        self.capacity=int(c_capacity)
         self.locked=list()
     
     def __iter__(self):

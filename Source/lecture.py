@@ -1,6 +1,7 @@
 from enum import Enum
 from Source.classroom import Classroom
 from Source.lecturer import Lecturer
+from Source.course import Course
 
 class LType(Enum):
     THEORY=1
@@ -10,11 +11,12 @@ class LType(Enum):
 
 
 class Lecture:
-    def __init__(self,l_type,l_duration,l_classroom,l_lecturer):
+    def __init__(self,l_type,l_duration,l_classroom,l_lecturer,l_course):
         self.ltype=Lecture.string2Ltype(l_type)
         self.duration=l_duration
         self.classroom=l_classroom
         self.lecturer=l_lecturer
+        self.course=l_course
         self.available_classrooms=list()
     
     def __iter__(self):
@@ -34,6 +36,7 @@ class Lecture:
 
     def add_available_classroom(self,class_id:str): 
         self.add_available_classroom(class_id)
+
 
     def __str__(self):
         msg="ΤΥΠΟΣ ΠΑΡΑΔΟΣΗΣ:{}".format(self.ltype.name)

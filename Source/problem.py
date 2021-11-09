@@ -116,12 +116,12 @@ class Timetable:
 
         del wb_obj
         del sheet_obj
+
         # Read Meetings
         wb_obj=openpyxl.load_workbook(Timetable.dit_schedule)
         sheet_obj=wb_obj.active
         total_rows=sheet_obj.max_row+1
         total_columns=sheet_obj.max_column+1
-        autoincreament_id=1
         for i in range(1,total_rows):
             row=list()
             for j in range(1,total_columns):
@@ -133,10 +133,9 @@ class Timetable:
             start_hour=data[0].split(':')[0]
             end_hour=data[1].split(':')[0]
             duration=int(end_hour)-int(start_hour)
-            lecture_instance=Lecture(row[3].strip(),duration,self.classrooms[self.classrooms.index(row[4].strip())],self.lecturers[self.lecturers.index(row[5])])
+            lecture_instance=Lecture(row[3].strip(),duration,self.classrooms[self.classrooms.index(row[4].strip())],self.lecturers[self.lecturers.index(row[5])],self.courses[self.courses.index(row[2].strip()+"-"+str(row[6]))])
             self.lectures.append(lecture_instance)
-            self.meetings.append(Meeting(autoincreament_id,data[0],data[1],row[0],self.courses[self.courses.index(row[2].strip()+"-"+str(row[6]))],int(row[6]),lecture_instance))
-            autoincreament_id+=1
+            self.meetings.append(Meeting(data[0],data[1],row[0],int(row[6]),lecture_instance))
 
         self.create_schema()
         
@@ -144,15 +143,16 @@ class Timetable:
         # Split into semester and lecturers spliting
         self.semester_info=list()
         for meeting in self.meetings:
-             if meeting.course.get_semester() in self.semester_info: 
+            meeting_semester=meeting.get_semester()
+            if meeting_semester in self.semester_info: 
                 continue
-             self.semester_info.append(Semester(meeting.course.get_semester()))
+            self.semester_info.append(Semester(meeting_semester))
 
         for meeting in self.meetings:
-            self.semester_info[self.semester_info.index(meeting.course.get_semester())].add_meeting(meeting)
+            self.semester_info[self.semester_info.index(meeting.lecture.course.get_semester())].add_meeting(meeting)
             period_zones=meeting.timezone()
             for zone in period_zones:
-                self.lecturers[self.lecturers.index(meeting.lecture.lecturer.identifier)].add_job(meeting.day,meeting.course.title,zone)
+                self.lecturers[self.lecturers.index(meeting.lecture.lecturer.identifier)].add_job(meeting.day,meeting.lecture.course.title,zone)
 
         for semester in self.semester_info:
             if "-" in semester.id:

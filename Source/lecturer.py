@@ -36,6 +36,9 @@ class Lecturer:
     def add_job(self,day,course,timezone):
         if day not in self.lectures:
             self.lectures[day]=dict()
+        else:
+            if timezone in self.lectures[day]:
+                return
         self.lectures[day][timezone]=course
 
     def __eq__(self,othername):
@@ -85,10 +88,5 @@ class Lecturer:
                 row.append(description)
             table.add_row(row)
         print(table,end='\n\n')
-
-# TEST
-# l=Lecturer(190,"Christos Gkogkos",Rank.DEP)
-# lecturer_info=list(iter(l))
-# print(lecturer_info)
 
     
