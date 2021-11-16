@@ -4,7 +4,7 @@ from Source.classroom import Classroom
 
 class Meeting:
     timezones=['08:00-09:00','09:00-10:00','10:00-11:00','11:00-12:00','12:00-13:00','13:00-14:00','14:00-15:00','15:00-16:00','16:00-17:00','17:00-18:00','18:00-19:00','19:00-20:00','20:00-21:00']
-    def __init__(self,m_start_hour,m_end_hour,m_day,m_semester,m_lecture):
+    def __init__(self,m_start_hour,m_end_hour,m_day,m_semester,m_course,m_lecturer,m_classroom):
         self.start_hour=m_start_hour
         self.end_hour=m_end_hour
         self.day=m_day
@@ -12,8 +12,11 @@ class Meeting:
         end_int_hour=int(self.end_hour.split(':')[0])
         start_int_hour=int(self.start_hour.split(':')[0])
         self.duration=end_int_hour-start_int_hour
-        self.lecture=m_lecture
-
+        self.course=m_course
+        self.lecturer=m_lecturer
+        self.classroom=m_classroom
+        self.meetings=list()
+        
     def __iter__(self):
         self.meeting_notes=[self.id,self.start_hour,self.end_hour]
         self.meeting_notes.extend(list(iter(self.course)))

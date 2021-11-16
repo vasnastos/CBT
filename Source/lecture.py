@@ -12,7 +12,7 @@ class LType(Enum):
 
 class Lecture:
     def __init__(self,l_type,l_duration,l_classroom,l_lecturer,l_course):
-        self.ltype=Lecture.string2Ltype(l_type)
+        self.ltype=LType(int(l_type))
         self.duration=l_duration
         self.classroom=l_classroom
         self.lecturer=l_lecturer

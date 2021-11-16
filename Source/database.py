@@ -5,9 +5,10 @@ from Source.lecturer import Lecturer
 from Source.lecture import Lecture
 from Source.meeting import Meeting
 from Source.time_ import convert2timegap
+import os
 
 
-class database:
+class Cbt_database:
     def __init__(self, name):
         self.database_name = name
         try:
@@ -16,7 +17,7 @@ class database:
             raise sqlite3.Error
 
     def create_tables(self):
-        query = "CREATE TABLE IF NOT EXISTS COURSES(id VARCHAR(10),title TEXT,semester INTEGER,flow TEXT,theory_time INTEGER,lab_time INTEGER,tut_time INTEGER,credits INTEGER,PRIMARY KEY(title,semester))"
+        query = "CREATE TABLE IF NOT EXISTS COURSES(id VARCHAR(10),title TEXT,semester INTEGER,flow TEXT,theory_time INTEGER,lab_time INTEGER,tut_time INTEGER,credits INTEGER,PRIMARY KEY(id))"
         query1 = "CREATE TABLE IF NOT EXISTS CLASSROOMS(id VARCHAR(10),type TEXT,capacity INTEGER,PRIMARY KEY(id))"
         query2 = "CREATE TABLE IF NOT EXISTS LECTURERS(name TEXT,rank TEXT,email TEXT,display_name TEXT,PRIMARY KEY(display_name))"
         query3 = "CREATE TABLE IF NOT EXISTS LECTURES(type INTEGER,duration INTEGER,classroom_id TEXT,lecturer_id TEXT,course_id TEXT,PRIMARY KEY(duration,type,classroom_id,lecturer_id,course_id))"
@@ -120,7 +121,7 @@ class database:
         cur = self.conn.cursor()
         output = cur.execute(query).fetchall()
         for row in output:
-            lecturers.append(Lecturer(row[0], row[1], row[2], row[3]))
+            lecturers.append(Lecturer(row[3],row[0],row[2],row[1]))
         self.conn.commit()
         cur.close()
         self.conn.close()
@@ -132,8 +133,20 @@ class database:
         cur = self.conn.cursor()
         output = cur.execute(query).fetchall()
         lectures=list()
+        classroom_query="SELECT * FROM CLASSROOMS WHERE id=?"
+        lecturer_query="SELECT * FROM LECTURERS WHERE display_name=?"
+        course_query="SELECT * FROM COURSES WHERE id=?"
         for row in output:
-            lectures.append(Lecture(row[0],row[1],row[2],row[3]))
+            classroom_cursor=self.conn.cursor()
+            lecturer_cursor=self.conn.cursor()
+            course_cursor=self.conn.cursor()
+            classroom_record=classroom_cursor.execute(classroom_query,(row[2],)).fetchall()[0]
+            lecturer_record=lecturer_cursor.execute(lecturer_query,(row[3],)).fetchall()[0]
+            course_record=course_cursor.execute(course_query,(row[4],)).fetchall()[0]
+            classroom_cursor.close()
+            lecturer_cursor.close()
+            course_cursor.close()
+            lectures.append(Lecture(row[0],row[1],Classroom(classroom_record[0],classroom_record[1],classroom_record[2]),Lecturer(lecturer_record[3],lecturer_record[0],lecturer_record[2],lecturer_record[1]),Course(course_record[0],course_record[1],course_record[2],course_record[3],course_record[4],course_record[5],course_record[6],course_record[7])))
         self.conn.commit()
         cur.close()
         self.conn.close()
@@ -142,50 +155,46 @@ class database:
     def meetings(self):
         self.conn=sqlite3.connect(self.database_name)
         query = "SELECT * FROM MEETINGS"
-        query_course = "SELECT * FROM COURSE WHERE title=? and semester=?"
-        query_lecture = "SELECT * FROM LECTURE WHERE meeting_id=?"
         meetings = list()
         cur = self.conn.cursor()
         output = cur.execute(query).fetchall()
-        self.conn.commit()
         for row in output:
-            cname = row[4].split("_")
-            title = cname[0]
-            semester = cname[1]
-            cursor_course = self.conn.cursor()
-            get_query_course = cursor_course.execute(
-                query, (title, semester)).fetchone()
-            query_course = Course(
-                get_query_course[0], get_query_course[1], get_query_course[2], get_query_course[3], get_query_course[4], get_query_course[5], get_query_course[6], get_query_course[7])
-            self.meetings.append(
-                Meeting(row[0], row[1], row[2], row[3], query_course, row[5])
-            )
-            cursor_course.close()
-            lecture_cursor = self.conn.cursor()
-            lecture_record = lecture_cursor.execute(
-                query_lecture, (row[0])).fetchone()
-            lecture_instance = Lecture(
-                lecture_record[0], lecture_record[1], lecture_record[2], lecture_record[3]
-            )
-            lecture_cursor.close()
-
-            meetings.append(
-                Meeting(row[0], row[1], row[2], row[3],
-                        query_course, row[5], lecture_instance)
-            )
+            course_cursor=self.conn.cursor()
+            lecturer_cursor = self.conn.cursor()
+            classroom_cursor=self.conn.cursor()
+            classroom_query="SELECT * FROM CLASSROOMS WHERE id=?"
+            lecturer_query="SELECT * FROM LECTURERS WHERE display_name=?"
+            course_query="SELECT * FROM COURSES WHERE id=?"
+            course_record=course_cursor.execute(course_query,(row[2],)).fetchall()[0]
+            self.conn.commit()
+            course_cursor.close()
+            lecturer_record = lecturer_cursor.execute(lecturer_query, (row[1],)).fetchall()[0]
+            self.conn.commit()
+            lecturer_cursor.close()
+            classroom_record=classroom_cursor.execute(classroom_query,(row[0],)).fetchall()[0]
+            self.conn.commit()
+            classroom_cursor.close()
+            meetings.append(Meeting(row[3], row[4], row[5], row[6],Course(course_record[0],course_record[1],course_record[2],course_record[3],course_record[4],course_record[5],course_record[6],course_record[7]),Lecturer(lecturer_record[3],lecturer_record[0],lecturer_record[2],lecturer_record[1]), Classroom(classroom_record[0],classroom_record[1],classroom_record[2])))
+            course_cursor.close()
+            lecturer_cursor.close()
+            classroom_cursor.close()
         cur.close()
 
         self.conn.close()
         return meetings
     
-    def courses_to_txt(self):
-        pathfile="dit_uoi_courses.txt"
-        self.conn=sqlite3.connect(self.database_name)
-        cur=self.conn.cursor()
-        query="SELECT id,title,semester,credits FROM COURSES"
-        output=cur.execute(query)
-        with open(pathfile,'w') as WF:
-            WF.write("ID,TITLE,SEMESTER,CREDITS\n")
-            for id,title,semester,credits in output:
-                WF.write(f"{id},{title},{semester},{credits}\n")
-        print(f"File save as:{pathfile}")
+    def export_meetings(self):
+        query="SELECT * FROM MEETINGS"
+        cursor=self.conn.cursor()
+        out=cursor.execute(query).fetchall()
+        self.conn.commit()
+        outputpath=os.path.join('','dbexport')
+        if not os.path.exists(outputpath):
+            os.mkdir(outputpath)
+        with open(os.path.join(outputpath,'meetings.csv')) as WF:    
+            WF.write('Classroom,lecturer,course,start_hour,end_hour,day,semester\n')
+            for rec in out:
+                WF.write(f"{rec[0]},{rec[1]},{rec[2]},{rec[3]},{rec[4]},{rec[5]},{rec[6]}\n")
+        self.conn.close()
+
+

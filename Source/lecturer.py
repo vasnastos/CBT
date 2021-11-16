@@ -10,6 +10,7 @@ class Rank(Enum):
     YADE=3
     PHD=4
     TEACHING_ASSISTANT=5
+    EXT=6
 
 
 class Lecturer:
@@ -17,7 +18,7 @@ class Lecturer:
         self.identifier=l_id
         self.name=l_name
         self.mail=l_mail
-        self.rank=Lecturer.string2Rank(l_rank)
+        self.rank=Rank(int(l_rank))
         self.lectures=dict()
     
     def __iter__(self):
@@ -66,6 +67,8 @@ class Lecturer:
             return Rank.PY
         elif name=="ΥΠΟΨΗΦΙΟΣ ΔΙΔΑΚΤΟΡΑΣ":
             return Rank.PHD
+        elif name=="ΕΚΤΑΚΟΣ":
+            return Rank.EXT
         else:
             return Rank.TEACHING_ASSISTANT
     
