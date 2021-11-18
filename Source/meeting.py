@@ -1,4 +1,3 @@
-from re import L
 from Source.lecture import Lecture
 from Source.classroom import Classroom
 
@@ -16,7 +15,11 @@ class Meeting:
         self.lecturer=m_lecturer
         self.classroom=m_classroom
         self.meetings=list()
+<<<<<<< HEAD
+
+=======
         
+>>>>>>> 06477f7ac76116bd2267277be186576b29cdc5f5
     def __iter__(self):
         self.meeting_notes=[self.id,self.start_hour,self.end_hour]
         self.meeting_notes.extend(list(iter(self.course)))
@@ -33,7 +36,7 @@ class Meeting:
             return StopIteration
     
     def description(self):
-        return self.lecture.course.description()+"\n"+self.lecture.lecturer.name+"\n"+self.lecture.Ltype2String()+"("+self.lecture.classroom.id+")\n"
+        return self.course.description()+"\n"+self.lecturer.name+"\n"+self.lecture.Ltype2String()+"("+self.classroom.id+")\n"
 
     def timezone(self):
         periods=list()
@@ -46,18 +49,9 @@ class Meeting:
             if zone_start_hour>=meeting_initial_hour and zone_end_hour<=meeting_end_hour:
                 periods.append(timezone)
         return periods
-    
-    def get_class_id(self):
-        return self.lecture.classroom.id
-    
-    def get_lecturer_id(self):
-        return self.lecture.lecturer.identifier
-    
-    def get_course_id(self):
-        return self.lecture.course.id
 
     def get_semester(self):
-        return self.lecture.course.get_semester()
+        return self.course.get_semester()
 
     def __str__(self):
         msg="ΑΝΑΓΝΩΡΙΣΤΙΚΟ:{}".format(self.id)+"\n"

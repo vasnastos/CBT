@@ -3,9 +3,13 @@ from Source.classroom import Classroom
 from Source.course import Course
 from Source.lecturer import Lecturer
 from Source.lecture import Lecture
-from Source.meeting import Meeting
+# from Source.meeting import Meeting
 from Source.time_ import convert2timegap
 import os
+<<<<<<< HEAD
+from Source.meet import Meeting
+=======
+>>>>>>> 06477f7ac76116bd2267277be186576b29cdc5f5
 
 
 class Cbt_database:
@@ -152,8 +156,61 @@ class Cbt_database:
         self.conn.close()
         return lectures
 
+    # def meetings(self):
+    #     self.conn=sqlite3.connect(self.database_name)
+    #     query = "SELECT * FROM MEETINGS"
+    #     meetings = list()
+    #     cur = self.conn.cursor()
+    #     output = cur.execute(query).fetchall()
+    #     for row in output:
+    #         course_cursor=self.conn.cursor()
+    #         lecturer_cursor = self.conn.cursor()
+    #         classroom_cursor=self.conn.cursor()
+    #         classroom_query="SELECT * FROM CLASSROOMS WHERE id=?"
+    #         lecturer_query="SELECT * FROM LECTURERS WHERE display_name=?"
+    #         course_query="SELECT * FROM COURSES WHERE id=?"
+    #         course_record=course_cursor.execute(course_query,(row[2],)).fetchall()[0]
+    #         self.conn.commit()
+    #         course_cursor.close()
+    #         lecturer_record = lecturer_cursor.execute(lecturer_query, (row[1],)).fetchall()[0]
+    #         self.conn.commit()
+    #         lecturer_cursor.close()
+    #         classroom_record=classroom_cursor.execute(classroom_query,(row[0],)).fetchall()[0]
+    #         self.conn.commit()
+    #         classroom_cursor.close()
+    #         meetings.append(Meeting(row[3], row[4], row[5], row[6],Course(course_record[0],course_record[1],course_record[2],course_record[3],course_record[4],course_record[5],course_record[6],course_record[7]),Lecturer(lecturer_record[3],lecturer_record[0],lecturer_record[2],lecturer_record[1]), Classroom(classroom_record[0],classroom_record[1],classroom_record[2])))
+    #         course_cursor.close()
+    #         lecturer_cursor.close()
+    #         classroom_cursor.close()
+    #     cur.close()
+
+    #     self.conn.close()
+    #     return meetings
+    
     def meetings(self):
         self.conn=sqlite3.connect(self.database_name)
+<<<<<<< HEAD
+        cur=self.conn.cursor()
+        query="SELECT * FROM MEETINGS"
+        lecture_query="SELECT * FROM LECTURES WHERE type=? and classroom_id=? and lecturer_id=? and course_id=? and duration=?"
+        output=cur.execute(query).fetchall()
+        meets=list()
+        for record in output:
+            lecture_cursor=self.conn.cursor()
+            start_int_hour=int(record[3].strip().split(':')[0])
+            end_int_hour=int(record[4].strip().split(':')[0])
+            duration=end_int_hour-start_int_hour
+            print((record[7],record[0],record[1],record[2],duration))
+            lecture=lecture_cursor.execute(lecture_query,(record[7],record[0],record[1],record[2],duration)).fetchall()[0]
+            print(lecture)
+            lecture_cursor.close()
+            meeting=Meeting(record[3],record[4],record[5],record[6])
+            meeting.set_lecture(lecture)
+            meets.append(meeting)
+        return meets
+            
+
+=======
         query = "SELECT * FROM MEETINGS"
         meetings = list()
         cur = self.conn.cursor()
@@ -179,8 +236,31 @@ class Cbt_database:
             lecturer_cursor.close()
             classroom_cursor.close()
         cur.close()
+>>>>>>> 06477f7ac76116bd2267277be186576b29cdc5f5
 
+    def export_meetings(self):
+        query="SELECT * FROM MEETINGS"
+        cursor=self.conn.cursor()
+        out=cursor.execute(query).fetchall()
+        self.conn.commit()
+        outputpath=os.path.join('','dbexport')
+        if not os.path.exists(outputpath):
+            os.mkdir(outputpath)
+        with open(os.path.join(outputpath,'meetings.csv')) as WF:    
+            WF.write('Classroom,lecturer,course,start_hour,end_hour,day,semester\n')
+            for rec in out:
+                WF.write(f"{rec[0]},{rec[1]},{rec[2]},{rec[3]},{rec[4]},{rec[5]},{rec[6]}\n")
         self.conn.close()
+<<<<<<< HEAD
+
+    def get_meetings_by_lecturer(self,lecturer_id):
+        self.conn=sqlite3.connect(self.database_name)
+        cur=self.conn.cursor()
+        query="SELECT * FROM MEETINGS WHERE lecturer_id=?"
+        output=cur.execute(query,(lecturer_id,)).fetchall()
+        return output
+            
+=======
         return meetings
     
     def export_meetings(self):
@@ -198,3 +278,4 @@ class Cbt_database:
         self.conn.close()
 
 
+>>>>>>> 06477f7ac76116bd2267277be186576b29cdc5f5

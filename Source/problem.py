@@ -14,7 +14,7 @@ import pickle
 from Source.time_ import convert2timegap
 import termcolor
 
-class Timetable:
+class Schedule:
     available_semesters=[i for i in range(1,9)]
     dit_schedule=os.path.join('','dit_factors','full_dit_info.xlsx')
     dit_classrooms=os.path.join('','dit_factors','dit_classrooms.xlsx')
@@ -36,7 +36,7 @@ class Timetable:
 
     def import_full_dit_schedule(self):
         # Read classrooms
-        wb_obj=openpyxl.load_workbook(Timetable.dit_classrooms)
+        wb_obj=openpyxl.load_workbook(Schedule.dit_classrooms)
         sheet_obj=wb_obj.active
         total_rows=sheet_obj.max_row+1
         total_columns=sheet_obj.max_column+1
@@ -52,7 +52,7 @@ class Timetable:
 
         # Read Lectures
         RF=None
-        with open(Timetable.dit_teachers,'r') as f:
+        with open(Schedule.dit_teachers,'r') as f:
             RF=csv.reader(f)
             start=True
             for name,rank,mail,id in RF:
@@ -62,7 +62,7 @@ class Timetable:
                 self.lecturers.append(Lecturer(id,name,mail,rank))
 
         #Read Courses
-        wb_obj=openpyxl.load_workbook(Timetable.dit_courses)
+        wb_obj=openpyxl.load_workbook(Schedule.dit_courses)
         sheet_obj=wb_obj.active
         total_rows=sheet_obj.max_row+1
         total_columns=sheet_obj.max_column+1
@@ -79,7 +79,7 @@ class Timetable:
         del wb_obj
         del sheet_obj
 
-        wb_obj=openpyxl.load_workbook(Timetable.dit_courses_old)
+        wb_obj=openpyxl.load_workbook(Schedule.dit_courses_old)
         sheet_obj=wb_obj.active
         total_rows=sheet_obj.max_row+1
         total_columns=sheet_obj.max_column+1
@@ -98,7 +98,7 @@ class Timetable:
         del sheet_obj
 
         #Read Extra lessons
-        wb_obj=openpyxl.load_workbook(Timetable.dit_courses_extra)
+        wb_obj=openpyxl.load_workbook(Schedule.dit_courses_extra)
         sheet_obj=wb_obj.active
         total_rows=sheet_obj.max_row+1
         total_columns=sheet_obj.max_column+1
@@ -118,7 +118,7 @@ class Timetable:
         del sheet_obj
 
         # Read Meetings
-        wb_obj=openpyxl.load_workbook(Timetable.dit_schedule)
+        wb_obj=openpyxl.load_workbook(Schedule.dit_schedule)
         sheet_obj=wb_obj.active
         total_rows=sheet_obj.max_row+1
         total_columns=sheet_obj.max_column+1

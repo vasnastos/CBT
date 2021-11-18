@@ -19,7 +19,11 @@ class Lecturer:
         self.name=l_name
         self.mail=l_mail
         self.rank=Rank(int(l_rank))
+<<<<<<< HEAD
+        self.meetings=dict()
+=======
         self.lectures=dict()
+>>>>>>> 06477f7ac76116bd2267277be186576b29cdc5f5
     
     def __iter__(self):
         self.lecturer_list=[self.id,self.name,self.rank.name]
@@ -49,7 +53,7 @@ class Lecturer:
         return self.identifier==oth.identifier
 
     def __str__(self):
-       msg="ΑΝΑΓΝΩΡΙΣΤΙΚΟ:{}".format(self.id)+"\n"
+       msg="ΑΝΑΓΝΩΡΙΣΤΙΚΟ:{}".format(self.identifier)+"\n"
        msg+="ΟΝΟΜΑ:{}".format(self.name)+"\n"
        msg+="ΗΛΕΚΤΡΟΝΙΚΗ ΔΙΕΥΘΥΝΣΗ:{}".format(self.mail)+"\n"
        msg+="ΒΑΘΜΙΔΑ:{}".format(self.rank.name)+"\n"
@@ -91,5 +95,29 @@ class Lecturer:
                 row.append(description)
             table.add_row(row)
         print(table,end='\n\n')
-
     
+    def set_lecturer_meetings(self,lecturer_meetings):   
+        for meeting in lecturer_meetings:
+            if meeting[5] not in self.meetings:
+                self.meetings[meeting[5]]=list()
+            self.meetings[meeting[5]].append((meeting[0],meeting[1],meeting[2],meeting[3],meeting[4],meeting[6]))
+
+    def lecturer_validation(self):
+        validate=list()
+        for day in Constant.days:
+            if day not in self.meetings: continue
+            valid=True
+            for meeting in self.meetings[day]:
+                for meeting1 in self.meetings[day]:
+                    if meeting==meeting1: continue
+                    start_hour_meeting=int(meeting[3].strip().split(':')[0])
+                    end_hour_meeting=int(meeting[4].strip().split(':')[0])
+                    start_hour_meeting_1=int(meeting1[3].strip().split(':')[0])
+                    if start_hour_meeting==start_hour_meeting_1 or start_hour_meeting<=start_hour_meeting_1<end_hour_meeting:
+                        valid=False
+                        break
+            if valid==False:
+                break
+            validate.append(valid)
+        return len([valid for valid in validate if valid])==len(self.meetings)        
+                            
