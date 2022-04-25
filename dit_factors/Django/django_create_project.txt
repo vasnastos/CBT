@@ -1,6 +1,0 @@
-1.pip3 install django
-2.django-admin startproject projectName
-3.cd projectName
-4.python manage.py migrate
-5.python manage.py runserver
-7.http://localhost:8000/

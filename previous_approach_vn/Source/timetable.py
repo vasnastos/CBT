@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from Source.constant_vars import Constant
 from Source.database import Cbt_database
 from termcolor import cprint
@@ -6,9 +5,7 @@ from prettytable import PrettyTable
 from prettytable import ALL
 
 from Source.semester import Semester
-=======
 from Source.database import Cbt_database
->>>>>>> 06477f7ac76116bd2267277be186576b29cdc5f5
 
 class Timetable:
     def __init__(self):
@@ -17,7 +14,6 @@ class Timetable:
         self.lecturers=self.db.lecturers()
         self.lectures=self.db.lectures()
         self.courses=self.db.courses()
-<<<<<<< HEAD
         self.info_per_semester=list()
         self.create_schema()
 
@@ -92,7 +88,6 @@ class Timetable:
                 row.append(meeting_schedule)
             table.add_row(row)
         print(table)
-=======
     
     def print_all(self):
         print(len(self.lectures))
@@ -102,4 +97,3 @@ class Timetable:
 
     def timetable_cost(self):
         pass
->>>>>>> 06477f7ac76116bd2267277be186576b29cdc5f5
