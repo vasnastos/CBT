@@ -28,10 +28,16 @@ class Course:
         self.periods_to_take_place=days_to_be_done
         self.students=cstudents
         self.building=building_id
+        self.lecture_id=1
 
     def set_lecturer(self,lecturer):
         self.lecturer=lecturer
     
+    def get_lecture_id(self):
+        retrieved_id=self.lecture_id
+        self.lecture_id+=1
+        return f"{self.course_id}_{retrieved_id}"
+
     def __eq__(self,cid):
         return self.course_id==cid
     
@@ -66,6 +72,9 @@ class Curricula:
     def add_course(self,course_instance):
         self.course.append(course_instance)
     
+    def is_curricula_of(self,course_id):
+        return course_id in self.courses
+
     def __eq__(self,qid):
         return self.curricula_id==qid
     
@@ -78,3 +87,31 @@ class Curricula:
         msg+='\n\n'
         return msg
 
+
+class Meeting:
+    def __init__(self,mid,course_id):
+        self.meeting_id=mid
+        self.course=course_id
+        self.day=-1
+        self.period_of_day=-1
+        self.period_constraints=list()
+        self.room_constraints=list()
+    
+    def set_period(self,pday,period):
+        self.day=pday
+        self.period_of_day=period
+    
+    def add_constraint(self,constraint:tuple,constraint_for='period'):
+        if constraint_for=='period':
+            self.period_constraints.append(constraint)
+        elif constraint_for=='room':
+            self.room_constraints.append(constraint)
+    
+    def is_feasible(self,period_pair):
+        return period_pair not in self.period_constraints
+
+    def __list__(self):
+        return [self.meeting_id,self.course,self.day,self.period_of_day," ".join([f"({day},{period})" for day,period in self.period_constraints])," ".join([f"{room_id}" for room_id in self.room_constraints])]
+
+    def __str__(self):
+        return f"Id:{self.meeting_id}\nCourse:{self.course}\nDay:{self.day}\nPeriod_of_period:{self.period_of_day}"
