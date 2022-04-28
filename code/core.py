@@ -4,6 +4,8 @@ from dit import Course as DC,Lecturer as DL,Classroom as DCL,Curricula as DCR
 from udine import Lecturer,Course,Classroom,Curricula,Meeting
 from collections import namedtuple
 from itertools import product
+from tabulate import tabulate
+import networkx as nx
 
 
 class Importer:
@@ -25,7 +27,7 @@ class Importer:
     @staticmethod
     def load_udine_dataset(pandas=False,udine_dataset_name=None,create_instance=False):
         extra_info=dict()
-        courses,rooms,lecturers,curricula,unavailability_constraints,room_constraints,meetings=list(),list(),list(),list(),list(),list()
+        courses,rooms,lecturers,curricula,unavailability_constraints,room_constraints,meetings=list(),list(),list(),list(),list(),list(),list()
         Course_constraint=namedtuple('Course_constraint',field_names=['constraint_id','day','hperiod'])
         Room_constraint=namedtuple('Room_contsraint',field_names=['course_id','room_id'])
         with open(os.path.join(Importer.path_to_udine_datasets,udine_dataset_name),'r') as RF:
@@ -47,7 +49,7 @@ class Importer:
                 elif line.strip()=="ROOMS:":
                     category="ROOMS"
                     continue
-                elif line.strip()=="CURRICULA":
+                elif line.strip()=="CURRICULA:":
                     category="CURRICULA"
                     continue
                 elif line.strip()=="UNAVAILABILITY_CONSTRAINTS:":
@@ -60,7 +62,7 @@ class Importer:
                 data=line.split()
                 if category=="COURSES":
                     if data[0].strip() not in courses:
-                        courses.append(Course(data[0].strip(),data[1].strip(),int(data[2].strip()),int(data[3].strip()),int(data[4].strip())))
+                        courses.append(Course(data[0].strip(),data[1].strip(),int(data[2].strip()),int(data[3].strip()),int(data[4].strip()),int(data[5].strip())))
                     
                     if data[1].strip() not in lecturers:
                         lecturers.append(Lecturer(data[1].strip()))
@@ -74,10 +76,11 @@ class Importer:
                 elif category=="CURRICULA":
                     if data[0].strip() not in curricula:
                         curricula.append(Curricula(data[0].strip()))
-                    
+                        
                     for i in range(2,len(data)):
                         curricula[curricula.index(data[0].strip())].add_course(courses[courses.index(data[i])])
-                
+                        courses[courses.index(data[i].strip())].curricula=data[0].strip()
+
                 elif category=="UNAVAILABILITY_CONSTRAINTS":
                     unavailability_constraints.append(Course_constraint._make(data))
                 
@@ -86,7 +89,7 @@ class Importer:
         
         # Create meetings for each lesson
         for course in courses:
-            for _ in course.lectures:
+            for _ in range(course.lectures):
                 meeting_obj=Meeting(course.get_lecture_id(),course.course_id)
 
                 for course_id,day,period in unavailability_constraints:
@@ -95,6 +98,12 @@ class Importer:
                 for course_id,room_id in room_constraints:
                     meeting_obj.add_constraint(room_id,constraint_for='room')
                 
+                meeting_lecturer=courses[courses.index(course.course_id)].lecturer
+                meeting_curricula=courses[courses.index(course.course_id)].curricula
+
+                meeting_obj.lecturer=lecturers[lecturers.index(meeting_lecturer)]
+                meeting_obj.curricula=meeting_curricula
+
                 meetings.append(meeting_obj)
 
         # Work with dataframes
@@ -105,7 +114,7 @@ class Importer:
             curricula=pd.DataFrame(data=[list(c) for c in curricula],columns=['ID','CURRICULA'])
             meetings=pd.DataFrame(data=[list(meeting) for meeting in meetings],columns=["ID","COURSE","DAY","PERIOD OF DAY","UNAVAILABILITY_CONSTRAINTS","ROOM_CONSTRAINTS"])
         
-        return courses,lecturers,classrooms,curricula,meetings,extra_info if not create_instance else  Problem.init_instance(udine_dataset_name,courses,lecturers,classrooms,curricula,meetings,extra_info)
+        return (courses,lecturers,rooms,curricula,meetings,extra_info) if not create_instance else  Problem.init_instance(udine_dataset_name,courses,lecturers,rooms,curricula,meetings,extra_info)
 
     @staticmethod
     def load_dit_dataset(dataset_name,pandas=False):
@@ -118,15 +127,17 @@ class Problem:
         self.problem_id=dataset_name
 
         if init_vars:
-            self.courses,self.lecturers,self.classrooms,self.curricula,self.unavailability_constraints,self.room_constraints,self.meetings,extra_information=Importer.load_udine_dataset(dataset_name,pandas)
+            self.courses,self.lecturers,self.classrooms,self.curricula,self.meetings,extra_information=Importer.load_udine_dataset(dataset_name,pandas)
             self.days,self.periods_per_day=extra_information.get('Days',-1),extra_information.get('Periods_per_day',-1)
             self.periods={(i,j):list()  for i in range(self.days) for j in range(self.periods_per_day)}
             self.number_of_meetings=len(self.meetings)
             self.p=len(self.periods)
             self.C=len(self.courses)
             self.T=len(self.lecturers)
+            self.R=len(self.classrooms)
             self.CR=len(self.curricula)
             self.available_periods=list(product(range(self.days),range(self.periods_per_day)))
+
 
         else:
             self.days,self.periods_per_day=-1,-1
@@ -135,6 +146,7 @@ class Problem:
             self.P=-1
             self.C=-1
             self.T=-1
+            self.R=-1
             self.CR=-1
             self.available_periods=list()
 
@@ -148,12 +160,14 @@ class Problem:
         problem.curricula=curricula
         problem.meetings=meetings
         problem.extra_information=extra_information
-        problem.days,problem.periods_per_day=extra_information.get('Days',-1),extra_information.get('Periods_per_day',-1)
+        problem.days,problem.periods_per_day=int(extra_information.get('Days',-1)),int(extra_information.get('Periods_per_day',-1))
         problem.periods={(i,j):list()  for i in range(problem.days) for j in range(problem.periods_per_day)}
         problem.number_of_meetings=len(problem.meetings)
         problem.P=problem.days * problem.periods_per_day
         problem.C=len(problem.courses)
+        problem.R=len(problem.classrooms)
         problem.CR=len(problem.curricula)
+        return problem
 
     def confict_density(self):
         cd_meetings=set()
@@ -179,7 +193,13 @@ class Problem:
         return sum([1 for meeting in self.meetings for period_pair in self.available_periods if meeting.is_feasible(period_pair)])/self.T
     
     def room_suitability(self):
-        pass
+        # rs=0
+        # for meeting in self.meetings:
+        #     for room in self.classrooms:
+        #         if meeting.is_feasible(room.room_id,feasibility_for='room'):
+        #             rs+=1
+        # return rs/self.R
+        return sum([1 for meeting in self.meetings for room in self.classrooms if meeting.is_feasible(room.room_id,feasibility_for='room')])
 
     def find_curricula(self,course_id):
         for i,curricula_obj in enumerate(self.curricula):
@@ -187,6 +207,13 @@ class Problem:
                 return i
         return -1
 
+    def lectures_per_day_per_curriculum(self):
+        return self.number_of_meetings/(self.days)
+    
+    def room_occupation(self):
+        return self.number_of_meetings/len([(room.room_id,period_pair) for room in self.classrooms for period_pair in list(self.periods.keys())])
+
+    # Validators
     def curricula_validance(self):
         for curricula_obj in self.curricula:
             for course in curricula_obj.courses:
@@ -197,14 +224,40 @@ class Problem:
                     if period1==period2:
                         return False
         return True
-
-    def availability(self):
-        pass
     
-    def room_occupancy(self):
-        pass
+    def describe(self):
+        for lecturer in self.lecturers:
+            lecturer._tabulate_()
+        
+        print('Curricala information')
+        for curricula_obj in self.curricula:
+            curricula_obj._tabulate_()
+
+    # Create graph
+    def find_neighbors(self,mid):
+        return [self.meetings[j].meeting_id for j in range(mid+1,self.number_of_meetings) if self.meetings[mid].is_neighbor_meeting(self.meetings[j]) and j!=mid]
+
+    def create_graph(self):
+        self.G=nx.Graph()
+        self.G.add_nodes([meeting.meeting_id for meeting in self.meetings]) 
+        for index,meeting in enumerate(self.meetings):
+            neighbors=self.find_neighbors(index)
+            for neighbor in neighbors:
+                self.G.add_edge(meeting.meeting_id,neighbor)
 
     def validance(self):
         #check courses validance
         pass
-    
+
+
+def select_dataset():
+    for index,ds_name in enumerate(Importer.udine_datasets):
+        print(f'{index+1}.{ds_name}')
+    ds_index=int(input('Select dataset index:'))
+    return Importer.udine_datasets[ds_index-1]
+
+
+if __name__=='__main__':
+    selected_dataset_name=select_dataset()
+    problem=Importer.load_udine_dataset(udine_dataset_name=selected_dataset_name,create_instance=True)
+    problem.describe()
