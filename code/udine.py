@@ -22,7 +22,7 @@ class Lecturer:
 
 
     def __str__(self):
-        msg=super().__str__()+'\n'
+        msg=self.lecturer_id+'\n'
         msg+="Courses\n"
         msg+="\n".join([str(course) for course in self.courses])
         return msg
@@ -65,11 +65,6 @@ class Course:
         return f"Id:{self.course_id}\n#Lectures{self.lectures}\nSpreading Periods:{self.periods_to_take_place}\n#Students:{self.students}\nBuilding id:{self.building}"
 
 class Classroom:
-    types_of_building={
-        "ΑΜΦΙΘΕΑΤΡΟ":0,
-        "ΕΡΓΑΣΤΗΡΙΟ":1
-    }
-
     def __init__(self,rid,rcapacity,rbid):
         self.room_id=rid
         self.capacity=rcapacity
