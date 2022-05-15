@@ -1,82 +1,78 @@
 #include <iostream>
 #include <vector>
+#include <map>
+#include <typeinfo>
 #include <fstream>
 #include <sstream>
 #include <filesystem>
+#include <algorithm>
+#include <numeric>
+#include <cmath>
+#include "course.hpp"
+#include "classroom.hpp"
+#include "lecturer.hpp"
+#include "curricula.hpp"
+#include "meeting.hpp"
 
+namespace fs=std::filesystem;
 
-class Course
+// Graph represantation
+class Graph
 {
     private:
-        std::string course_id;
-        std::string lecturer_id;
-        int lecturer;
-        int periods_to_take_place;
-        int students;
-        int building_id;
-        int lecture_id;
-        std::string curricula_id;
+        std::map <std::string,std::vector <std::string>> adj_matrix;
     public:
-        Course(std::string cid,std::string lid,int lecturer_identification,int period_distro,int number_of_students,int bid,int lecid,int curid);
-        ~Course();
-        void set_lecturer(int lecturer_id);
-        int get_lecturer_id();
-        operator std::string()const;
-};
-
-class Classroom
-{
-    private:
-        std::string room_id;
-        int capacity;
-        int building_id;
-    public:
-        Classroom(std::string rid,int capacity_place,int bid);
-        ~Classroom();
-        operator std::string()const;
-};
-
-class Curricula
-{
-    private:
-        std::string curricula_id;
-        std::vector <Course> courses;
-        int S;
-    public:
-        Curricula(std::string cid);
-        void add_course(const Course &c);
-        bool is_curricula_of(std::string course_id);
-        operator std::string()const;
-};
-
-class Lecturer
-{
-    private:
-        std::string id;
-        std::vector <Course> courses;
-    public:
-        Lecturer(std::string lecturer_id);
-        void add_course(const Course &c);
-        operator std::string()const;
-};
-
-class Meeting
-{
-    private:
-        std::string id;
-        std::string course;
-        Lecturer lecturer;
-        Curricula curricula;
-        int day;
-        int period;
-    public:
-        Meeting(std::string mid,std::string cid);
-        void set_period(int d,int p);
-        void add_constraint();
+        std::vector <std::string> nodes;
+        std::vector <std::pair <std::string,std::string>> edges;
+        Graph();
+        void add_node(const std::string &lecture);
+        void add_edge(const std::string &l1,const std::string &l2);
+        bool has_edge(const std::string &l1,const std::string &l2);
+        friend std::ostream &operator<<(std::ostream &os,const Graph &g);
 };
 
 class Problem
 {
     private:
-        std::vector <Course> courses;        
+        std::string id;
+        std::vector <Course> courses;
+        std::vector <Lecturer> lecturers;
+        std::vector <Meeting> meetings;
+        std::vector <Classroom> classrooms;
+        std::vector <Curricula> curriculas;
+        std::vector <std::pair<int,int>> aperiods;
+        Graph G;
+        int M; //Number of meetings
+        int P;  // Number of periods
+        int C;  // Number of courses
+        int LC; // Number of lecturers
+        int R;  // Number of classrooms
+        int CR; // Number of curricula
+        int min_lecturers_in_day;
+        int max_lecturers_in_day;
+        int days;
+        int periodspd; // periods per day
+
+    public:
+        static std::string datasets_root;
+        static void set_path_to_dataset(const std::string &path_to_ds);
+        static void set_path_to_dataset();
+
+        Problem();
+        Problem(std::string pid);
+        void load_udine();
+        double conflict_density();
+        double teachers_availability();
+        double room_suitability();
+        int curricula_index(std::string course_id);
+        int lectures_per_day_rate();
+        int room_occupation();
+        void create_graph();
+        std::vector <std::string> find_neighbors(const Meeting &m);
+};
+
+class Solution
+{
+    private:
+
 };
