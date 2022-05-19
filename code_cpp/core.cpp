@@ -9,7 +9,10 @@ void Problem::init_source()
     {
         pth.append(x);
     }
+<<<<<<< HEAD
     path_to_datasets=pth.string();
+=======
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
     for(auto &entry:fs::recursive_directory_iterator(pth.string()))
     {
         if(fs::is_regular_file(entry.path()))
@@ -22,6 +25,7 @@ void Problem::init_source()
 Problem::Problem(const std::string &dataset_name):id(dataset_name)
 {
     this->load_udine();
+<<<<<<< HEAD
     this->create_graph();
 }
 
@@ -40,10 +44,14 @@ std::vector <std::string> Problem::dataset_names={
     "Udine11",
     "toy"
 };
+=======
+}
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
 
 void Problem::load_udine()
 {
     if(this->id=="") return;
+<<<<<<< HEAD
     
 
     std::fstream fp(this->id,std::ios::in);
@@ -63,6 +71,24 @@ void Problem::load_udine()
     {
         if(line.length()==0) continue;
         if(line=="END.") break;
+=======
+
+    std::fstream fp(this->id,std::ios::in);
+    if(!fp.is_open())
+    {
+        std::cerr<<"File did not properly"<<std::endl;
+        return;
+    }
+
+    std::vector <std::string> data;
+    std::string line,word,category;
+    int filecounter=0;
+    std::stringstream ss,ss1;
+
+    while(std::getline(fp,line))
+    {
+        if(line.length()==0) continue;
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
         if(filecounter<8)
         {
             ss=std::stringstream(line);
@@ -115,27 +141,22 @@ void Problem::load_udine()
         if(line=="COURSES:")
         {
             category="COURSES";
-            continue;
         }
         else if(line=="ROOMS:")
         {
             category="ROOMS";
-            continue;
         }
         else if(line=="CURRICULA:")
         {
             category="CURRICULA";
-            continue;
         }
         else if(line=="UNAVAILABILITY_CONSTRAINTS:")
         {
             category="UNAVAILABILITY_CONSTRAINTS";
-            continue;
         }
         else if(line=="ROOM_CONSTRAINTS:")
         {
             category="ROOM_CONSTRAINTS";
-            continue;
         }
 
         data.clear();
@@ -144,6 +165,7 @@ void Problem::load_udine()
         {
             data.emplace_back(word);
         }
+
         if(category=="COURSES")
         {
             this->courses.emplace_back(Course(data[0],data[1],std::stoi(data[2]),std::stoi(data[3]),std::stoi(data[4]),std::stoi(data[5])));
@@ -156,11 +178,19 @@ void Problem::load_udine()
         else if(category=="CURRICULA")
         {
             this->curriculas.emplace_back(Curricula(data[0]));
+<<<<<<< HEAD
             for(int i=2,t=data.size();i<t;i++)
             {
                 auto itr=std::find_if(this->courses.begin(),this->courses.end(),[&](const Course &c) {return c.get_id()==data[i];});
                 itr->set_curricula(data[0]);
                 curricula_info[data[0]].emplace_back(data[i]);
+=======
+            for(int i=2,t=this->curriculas.size();i<t;i++)
+            {
+                auto itr=std::find_if(this->courses.begin(),this->courses.end(),[&](const Course &c) {return c.get_id()==data[i];});
+                itr->set_curricula(data[0]);
+                this->curriculas[this->curriculas.size()-1].add_course(*itr);
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
             }
         }
         else if(category=="UNAVAILABILITY_CONSTRAINTS")
@@ -175,7 +205,10 @@ void Problem::load_udine()
         }
     }
     fp.close();
+<<<<<<< HEAD
     
+=======
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
     std::string lecture_id,course_full_id;
     for(auto &course:this->courses)
     {
@@ -183,11 +216,16 @@ void Problem::load_udine()
         {
             course_full_id=course.get_id();
             std::replace(course_full_id.begin(),course_full_id.end(),'c',' ');
+<<<<<<< HEAD
             lecture_id="M"+course_full_id+"_"+std::to_string(i);
+=======
+            lecture_id="M"+std::to_string(std::stoi(course_full_id))+"_"+std::to_string(i);
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
             this->lectures.emplace_back(Lecture(lecture_id,course));
         }
     }
 
+<<<<<<< HEAD
     for(auto &xp:curricula_info)
     {
         auto itr=std::find_if(this->curriculas.begin(),this->curriculas.end(),[&](const Curricula &c) {return c.get_id()==xp.first;});
@@ -205,6 +243,10 @@ void Problem::load_udine()
     this->LCS=this->lecturers.size();
     this->P=this->D * this->PPD;
     this->L=this->lectures.size();
+=======
+    this->LCS=this->lecturers.size();
+    this->P=this->D * this->PPD;
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
 }
 
 double Problem::conflict_density(std::string per)
@@ -247,6 +289,7 @@ double Problem::conflict_density(std::string per)
         }
         return static_cast<double>(conflict_counter)/pow(this->C,2);
     }
+<<<<<<< HEAD
     return -1.0;
 }
 double Problem::teachers_availability(std::string per)
@@ -269,10 +312,29 @@ double Problem::room_suitability(std::string per)
         std::cout<<static_cast<double>(std::accumulate(this->courses.begin(),this->courses.end(),0,[&](int s,Course &c) {return s+c.valid_rooms(this->rooms);}))<<std::endl;
         return static_cast<double>(std::accumulate(this->courses.begin(),this->courses.end(),0,[&](int s,Course &c) {return s+c.valid_rooms(this->rooms);}))/(this->C * this->R);
     }
+=======
+}
+double Problem::teachers_availability(std::string per)
+{
+    if(per=="lecture")
+    return static_cast<double>(std::accumulate(this->lectures.begin(),this->lectures.end(),0,[&](int y,const Lecture &lecture) {return y+lecture.valid_periods(this->D,this->PPD);}))/(this->LCS*this->P);
+    else if(per=="course")
+    return static_cast<double>(std::accumulate(this->courses.begin(),this->courses.end(),0,[&](int s,Course &c) {return s+c.valid_periods(this->D,this->PPD);}))/(this->P * this->C);
+    return -1;
+}
+
+double Problem::room_suitability(std::string per)
+{
+    if(per=="lecture")
+    return static_cast<double>(std::accumulate(this->lectures.begin(),this->lectures.end(),0,[&](int s,const Lecture &lec) {return s+lec.valid_rooms(this->rooms);}))/this->R;
+    else if(per=="course")
+    return static_cast<double>(std::accumulate(this->courses.begin(),this->courses.end(),0,[&](int s,Course &c) {return s+c.valid_rooms(this->rooms);}))/(this->P*this->C);
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
     return -1;
 }   
 
 
+<<<<<<< HEAD
 std::string Problem::lectures_per_day_per_curriculum()
 {
     std::vector <double> lectures_per_day;  
@@ -389,4 +451,18 @@ std::ostream &operator<<(std::ostream &os,const Graph &g)
         os<<"]"<<std::endl<<std::endl;
     }
     return os;
+=======
+double Problem::lectures_per_day_per_curriculum()
+{
+    return this->L/(this->P*this->C);
+}
+
+double Problem::room_occupation(std::string per="course")
+{
+    if(per=="lecture")
+    return this->L/(this->R*this->P);
+    else if(per=="course")
+    return this->C/(this->R*this->P);
+    return -1;
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
 }

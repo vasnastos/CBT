@@ -1,8 +1,13 @@
 #include "department.hpp"
 #include <filesystem>
 #include <fstream>
+<<<<<<< HEAD
 #include <set>
 #include <map>
+=======
+#include <numeric>
+#include <set>
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
 #include <sstream>
 
 // Structure of first nine lines
@@ -18,6 +23,7 @@
 
 namespace fs=std::filesystem;
 
+<<<<<<< HEAD
 class Graph
 {
     private:
@@ -33,6 +39,8 @@ class Graph
 };
 
 
+=======
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
 class Problem
 {
     private:
@@ -60,6 +68,7 @@ class Problem
         int LCS; //number of lectures
         int P; // number of periods
         
+<<<<<<< HEAD
         Graph G;
 
     public:
@@ -70,17 +79,34 @@ class Problem
         Problem(const std::string &dataset_name);
         void load_udine();
         void create_graph();
+=======
+
+    public:
+        static std::vector <std::string> dataset_source;
+        static void init_source();
+        Problem(const std::string &dataset_name);
+        void load_udine();
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
 
         double conflict_density(std::string per="course");
         double teachers_availability(std::string per="course");
         double room_suitability(std::string per="course");
+<<<<<<< HEAD
         double room_occupation(std::string per="room");
         std::string lectures_per_day_per_curriculum();
 
+=======
+        double room_occupation(std::string per="course");
+        double lectures_per_day_per_curriculum();
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
         int total_seats();
         int total_students();
         int min_curriculum_lectures();
         int max_curriculum_lectures();
 
+<<<<<<< HEAD
         void summary();
 };
+=======
+};
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd

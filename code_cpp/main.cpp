@@ -1,5 +1,6 @@
 #include "core.hpp"
 
+<<<<<<< HEAD
 std::string select_dataset()
 {
     int j;
@@ -44,5 +45,9 @@ void scenario_2()
 int main()
 {
     scenario1(); // Test metrics in toy sample of udine
+=======
+int main()
+{
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
     return EXIT_SUCCESS;
 }

@@ -57,6 +57,7 @@ int Course::get_number_of_lectures()const
     return this->number_of_lectures;
 }
 
+<<<<<<< HEAD
 int Course::get_students()const
 {
     return this->students;
@@ -70,6 +71,15 @@ bool Course::is_period_constraint(const int &day,const int &period)const
 bool Course::is_room_constraint(const std::string &room_id)const
 {
     return std::find(this->room_constraints.begin(),this->room_constraints.end(),room_id)!=this->room_constraints.end();
+=======
+bool Course::is_period_constraint(const int &day,const int &period)const
+{
+    return std::find_if(this->unavailability_constraints.begin(),this->unavailability_constraints.end(),[&](std::pair <int,int> &p) {return p.first==day && p.second==period;})!=this->unavailability_constraints.end();
+}
+bool Course::is_room_constraint(const std::string &room_id)const
+{
+    return std::find_if(this->room_constraints.begin(),this->room_constraints.end(),[&](const std::string &pc) {return pc==room_id;})!=this->room_constraints.end();
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
 }
 
 int Course::valid_periods(int days,int ppd)
@@ -100,10 +110,13 @@ int Course::valid_rooms(std::vector <Room> &rooms)
     return vcounter;
 }
 
+<<<<<<< HEAD
 std::ostream &operator<<(std::ostream &os,const Course &c)
 {
     return os<<c.id<<"  RC:"<<c.room_constraints.size()<<"  UC:"<<c.unavailability_constraints.size()<<std::endl;
 }
+=======
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
 
 Room::Room(std::string rid,int cap,int bid):id(rid),capacity(cap),building_id(bid) {}
 
@@ -112,6 +125,7 @@ std::string Room::get_id()const
     return this->id;
 }
 
+<<<<<<< HEAD
 int Room::get_capacity()const
 {
     return this->capacity;
@@ -129,11 +143,16 @@ std::vector <Course> Curricula::get_courses()const
     return this->courses;
 }
 
+=======
+Curricula::Curricula(std::string &cid):id(cid) {}
+
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
 void Curricula::add_course(const Course &c)
 {
     this->courses.emplace_back(c);
 }
 
+<<<<<<< HEAD
 int Curricula::number_of_courses()const
 {
     return this->courses.size();
@@ -151,6 +170,10 @@ std::string Lecture::get_id()const
     return this->id;
 }
 
+=======
+Lecture::Lecture(const std::string &lid,const Course &cc):id(lid),course(cc) {}
+
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
 bool Lecture::course_equality(const Lecture &lec)
 {
     return this->course==lec.course;

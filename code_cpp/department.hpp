@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+<<<<<<< HEAD
 #include <algorithm>
 #include <numeric>
 #include <cmath>
@@ -16,6 +17,8 @@ class Room
         int get_capacity()const;
 };
 
+=======
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
 
 class Course
 {
@@ -44,7 +47,10 @@ class Course
         std::string get_curricula()const;
         std::string get_id()const;
         std::string get_lecturer()const;
+<<<<<<< HEAD
         int get_students()const;
+=======
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
         int get_number_of_lectures()const;
 
         bool is_period_constraint(const int &day,const int &period)const;
@@ -52,10 +58,27 @@ class Course
 
         int valid_periods(int days,int ppd);
         int valid_rooms(std::vector <Room> &rooms);
+<<<<<<< HEAD
         friend std::ostream &operator<<(std::ostream &os,const Course &c);
 };
 
 
+=======
+};
+
+
+class Room
+{
+    private:
+        std::string id;
+        int capacity;
+        int building_id;
+    public:
+        Room(std::string rid,int cap,int bid);
+        std::string get_id()const;
+};
+
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
 class Curricula
 {
     private:
@@ -63,11 +86,15 @@ class Curricula
         std::vector <Course> courses;
     public:
         Curricula(std::string &cid);
+<<<<<<< HEAD
         std::string get_id()const;
         std::vector <Course> get_courses()const;
         void add_course(const Course &c);
         int number_of_courses()const;
         int number_of_lectures()const;
+=======
+        void add_course(const Course &c);
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
 };
 
 class Lecture
@@ -77,7 +104,10 @@ class Lecture
         Course course;
     public:
         Lecture(const std::string &lid,const Course &cc);
+<<<<<<< HEAD
         std::string get_id()const;
+=======
+>>>>>>> 7276d56c3ee6ca88866a0e062440fab71aeb7bcd
         bool course_equality(const Lecture &lec);
         bool teacher_equality(const Lecture &lec);
         bool curricula_equality(const Lecture &lec);
