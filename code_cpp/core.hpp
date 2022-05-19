@@ -1,78 +1,86 @@
-#include <iostream>
-#include <vector>
-#include <map>
-#include <typeinfo>
-#include <fstream>
-#include <sstream>
+#include "department.hpp"
 #include <filesystem>
-#include <algorithm>
-#include <numeric>
-#include <cmath>
-#include "course.hpp"
-#include "classroom.hpp"
-#include "lecturer.hpp"
-#include "curricula.hpp"
-#include "meeting.hpp"
+#include <fstream>
+#include <set>
+#include <map>
+#include <sstream>
+
+// Structure of first nine lines
+// Name: Ing0809-1
+// Courses: 142
+// Rooms: 21
+// Days: 5
+// Periods_per_day: 5
+// Curricula: 83
+// Min_Max_Daily_Lectures: 2 3
+// UnavailabilityConstraints: 841
+// RoomConstraints: 426
 
 namespace fs=std::filesystem;
 
-// Graph represantation
 class Graph
 {
     private:
-        std::map <std::string,std::vector <std::string>> adj_matrix;
+        std::map <std::string,std::vector <std::string>> adj_list;
     public:
-        std::vector <std::string> nodes;
-        std::vector <std::pair <std::string,std::string>> edges;
         Graph();
-        void add_node(const std::string &lecture);
-        void add_edge(const std::string &l1,const std::string &l2);
-        bool has_edge(const std::string &l1,const std::string &l2);
+        std::vector <std::pair <std::string,std::string>> edges;
+        std::vector <std::string> nodes;
+        void add_node(const std::string &node);
+        void add_edge(const std::string &e1,const std::string &e2);
+        bool has_edge(const std::string &e1,const std::string &e2);
         friend std::ostream &operator<<(std::ostream &os,const Graph &g);
 };
+
 
 class Problem
 {
     private:
         std::string id;
+        std::set <std::string> lecturers;
         std::vector <Course> courses;
-        std::vector <Lecturer> lecturers;
-        std::vector <Meeting> meetings;
-        std::vector <Classroom> classrooms;
+        std::vector <Room> rooms;
         std::vector <Curricula> curriculas;
-        std::vector <std::pair<int,int>> aperiods;
+        std::vector <std::tuple<std::string,int,int>> unavailability_constraints;
+        std::vector <std::pair <std::string,std::string>> room_constraints;
+        std::vector <Lecture> lectures;
+
+        // Abbreviations
+        int C;// number of courses
+        int R;// number of rooms
+        int CL;//number of curriculas
+        int S;// number of students;
+        int D;// total days
+        int L;// number of lectures
+        int PPD; // periods per day
+        int MNDL;// Min daily lectures
+        int MXDL;//Max Daily lectures
+        int UNC; //number of unavailability constraints
+        int RC;// number of room constraints
+        int LCS; //number of lectures
+        int P; // number of periods
+        
         Graph G;
-        int M; //Number of meetings
-        int P;  // Number of periods
-        int C;  // Number of courses
-        int LC; // Number of lecturers
-        int R;  // Number of classrooms
-        int CR; // Number of curricula
-        int min_lecturers_in_day;
-        int max_lecturers_in_day;
-        int days;
-        int periodspd; // periods per day
 
     public:
-        static std::string datasets_root;
-        static void set_path_to_dataset(const std::string &path_to_ds);
-        static void set_path_to_dataset();
-
-        Problem();
-        Problem(std::string pid);
+        static std::vector <std::string> dataset_source;
+        static std::vector <std::string> dataset_names;
+        static void init_source();
+        static std::string path_to_datasets;
+        Problem(const std::string &dataset_name);
         void load_udine();
-        double conflict_density();
-        double teachers_availability();
-        double room_suitability();
-        int curricula_index(std::string course_id);
-        int lectures_per_day_rate();
-        int room_occupation();
         void create_graph();
-        std::vector <std::string> find_neighbors(const Meeting &m);
-};
 
-class Solution
-{
-    private:
+        double conflict_density(std::string per="course");
+        double teachers_availability(std::string per="course");
+        double room_suitability(std::string per="course");
+        double room_occupation(std::string per="room");
+        std::string lectures_per_day_per_curriculum();
 
+        int total_seats();
+        int total_students();
+        int min_curriculum_lectures();
+        int max_curriculum_lectures();
+
+        void summary();
 };
