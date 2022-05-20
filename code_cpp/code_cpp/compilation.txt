@@ -1,0 +1,2 @@
+COMPILE: g++ core.cpp department.cpp main.cpp -std=c++17 -o cbt
+EXECUTION: ./cbt
