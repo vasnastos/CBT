@@ -2,8 +2,8 @@ from ortools.sat.python import cp_model
 import os
 from collections import defaultdict
 from tqdm import tqdm
-from functools import reduce
 import networkx as nx
+import docplex.cp.model as cpx
 
 
 signs=['COURSES:','ROOMS:','CURRICULA:','UNAVAILABILITY_CONSTRAINTS:','ROOM_CONSTRAINTS:']
@@ -65,7 +65,7 @@ class CTT:
                 
                 elif content=='ROOMS':
                     self.rooms[data[0].strip()]=dict()
-                    self.rooms[data[0].strip()]['C']=int(data[1].strip())
+                    self.rooms[data[0].strip()]['c']=int(data[1].strip())
                     self.rooms[data[0].strip()]['bid']=int(data[2].strip())
                 
                 elif content=='CURRICULA':
@@ -193,96 +193,96 @@ def udine_solver1(problem:CTT,objectivef=True,timesol=600):
                     >=-(i-1)
                 )
 
-        # # Isolated lectures cost component(IsolatedLectures)
-        # for cid,aid in problem.lectures:
-        #     for d in range(problem.days):
-        #         for p in range(d*problem.ppd,d*problem.ppd+problem.ppd):
-        #             previous_period=p-1
-        #             next_period=p+1
-        #             extern_lectures=[i for i in range(problem.courses[cid]['l']) if i!=aid]
-        #             if previous_period<d*problem.ppd:
-        #                 model.Add(
-        #                     sum([lvars[(cid2,aid2,rid,next_period)] for cid2 in problem.G.neighbors(cid) for aid2 in range(problem.courses[cid2]['d']) for rid in problem.course_rooms[cid2] if next_period in problem.course_periods[cid2]])
-        #                     +sum([lvars[(cid,aid2,rid,next_period)] for aid2 in extern_lectures for rid in problem.course_rooms[cid] if next_period in problem.course_periods[cid]])
-        #                     -sum([lvars[(cid,aid,rid,p)] for rid in problem.course_rooms[cid] if p in problem.course_periods[cid]])
-        #                     +isolated_lectures[(cid,aid)]
-        #                     >=0
-        #                 ) 
-        #             elif next_period==d*problem.ppd+problem.ppd:
-        #                 model.Add(
-        #                     sum([lvars[(cid2,aid2,rid,previous_period)] for cid2 in problem.G.neighbors(cid) for aid2 in range(problem.courses[cid2]['d']) for rid in problem.course_rooms[cid2] if previous_period in problem.course_periods[cid2]])
-        #                     +sum([lvars[(cid,aid2,rid,previous_period)] for aid2 in extern_lectures for rid in problem.course_rooms[cid] if previous_period in problem.course_periods[cid]])
-        #                     -sum([lvars[(cid,aid,rid,p)] for rid in problem.course_rooms[cid] if p in problem.course_periods[cid]])
-        #                     +isolated_lectures[(cid,aid)]>=0
-        #                 )
-        #             else:
-        #                 model.Add(
-        #                     sum([lvars[(cid2,aid2,rid,previous_period)] for cid2 in problem.G.neighbors(cid) for aid2 in range(problem.courses[cid2]['d']) for rid in problem.course_rooms[cid2] if previous_period in problem.course_periods[cid2]])
-        #                     +sum([lvars[(cid,aid2,rid,previous_period)] for aid2 in extern_lectures for rid in problem.course_rooms[cid] if previous_period in problem.course_periods[cid]])
-        #                     -sum([lvars[(cid,aid,rid,p)] for rid in problem.course_rooms[cid] if p in problem.course_periods[cid]])
-        #                     +sum([lvars[(cid2,aid2,rid,next_period)] for cid2 in problem.G.neighbors(cid) for aid2 in range(problem.courses[cid2]['d']) for rid in problem.course_rooms[cid2] if next_period in problem.course_periods[cid2]])
-        #                     +sum([lvars[(cid,aid2,rid,next_period)] for aid2 in extern_lectures for rid in problem.course_rooms[cid] if next_period in problem.course_periods[cid]])
-        #                     +isolated_lectures[(cid,aid)]
-        #                     >=0
-        #                 )
+        # Isolated lectures cost component(IsolatedLectures)
+        for cid,aid in problem.lectures:
+            for d in range(problem.days):
+                for p in range(d*problem.ppd,d*problem.ppd+problem.ppd):
+                    previous_period=p-1
+                    next_period=p+1
+                    extern_lectures=[i for i in range(problem.courses[cid]['l']) if i!=aid]
+                    if previous_period<d*problem.ppd:
+                        model.Add(
+                            sum([lvars[(cid2,aid2,rid,next_period)] for cid2 in problem.G.neighbors(cid) for aid2 in range(problem.courses[cid2]['d']) for rid in problem.course_rooms[cid2] if next_period in problem.course_periods[cid2]])
+                            +sum([lvars[(cid,aid2,rid,next_period)] for aid2 in extern_lectures for rid in problem.course_rooms[cid] if next_period in problem.course_periods[cid]])
+                            -sum([lvars[(cid,aid,rid,p)] for rid in problem.course_rooms[cid] if p in problem.course_periods[cid]])
+                            +isolated_lectures[(cid,aid)]
+                            >=0
+                        ) 
+                    elif next_period==d*problem.ppd+problem.ppd:
+                        model.Add(
+                            sum([lvars[(cid2,aid2,rid,previous_period)] for cid2 in problem.G.neighbors(cid) for aid2 in range(problem.courses[cid2]['d']) for rid in problem.course_rooms[cid2] if previous_period in problem.course_periods[cid2]])
+                            +sum([lvars[(cid,aid2,rid,previous_period)] for aid2 in extern_lectures for rid in problem.course_rooms[cid] if previous_period in problem.course_periods[cid]])
+                            -sum([lvars[(cid,aid,rid,p)] for rid in problem.course_rooms[cid] if p in problem.course_periods[cid]])
+                            +isolated_lectures[(cid,aid)]>=0
+                        )
+                    else:
+                        model.Add(
+                            sum([lvars[(cid2,aid2,rid,previous_period)] for cid2 in problem.G.neighbors(cid) for aid2 in range(problem.courses[cid2]['d']) for rid in problem.course_rooms[cid2] if previous_period in problem.course_periods[cid2]])
+                            +sum([lvars[(cid,aid2,rid,previous_period)] for aid2 in extern_lectures for rid in problem.course_rooms[cid] if previous_period in problem.course_periods[cid]])
+                            -sum([lvars[(cid,aid,rid,p)] for rid in problem.course_rooms[cid] if p in problem.course_periods[cid]])
+                            +sum([lvars[(cid2,aid2,rid,next_period)] for cid2 in problem.G.neighbors(cid) for aid2 in range(problem.courses[cid2]['d']) for rid in problem.course_rooms[cid2] if next_period in problem.course_periods[cid2]])
+                            +sum([lvars[(cid,aid2,rid,next_period)] for aid2 in extern_lectures for rid in problem.course_rooms[cid] if next_period in problem.course_periods[cid]])
+                            +isolated_lectures[(cid,aid)]
+                            >=0
+                        )
 
-        # # Time windows between lectures in each curricula(Windows)
-        # for curricula_id in list(problem.curricula.keys()):
-        #     for d in range(problem.days):
-        #         for pid in range(d*problem.ppd,d*problem.ppd+problem.ppd):
-        #             if pid==d*problem.ppd or pid==problem.ppd*d+problem.ppd-1: continue
-        #             y1decision=model.NewBoolVar(name=f'y1_{curricula_id}_{d}_{pid}')
-        #             y2decision=model.NewBoolVar(name=f'y2_{curricula_id}_{d}_{pid}_')
-        #             y3decision=model.NewBoolVar(name=f'final_decision_{curricula_id}_{d}_{pid}_')
+        # Time windows between lectures in each curricula(Windows)
+        for curricula_id in list(problem.curricula.keys()):
+            for d in range(problem.days):
+                for pid in range(d*problem.ppd,d*problem.ppd+problem.ppd):
+                    if pid==d*problem.ppd or pid==problem.ppd*d+problem.ppd-1: continue
+                    y1decision=model.NewBoolVar(name=f'y1_{curricula_id}_{d}_{pid}')
+                    y2decision=model.NewBoolVar(name=f'y2_{curricula_id}_{d}_{pid}_')
+                    y3decision=model.NewBoolVar(name=f'final_decision_{curricula_id}_{d}_{pid}_')
                     
-        #             model.Add(
-        #                 sum([lvars[(cid,aid,rid,p)] for cid in problem.curricula[curricula_id] for aid in range(problem.courses[cid]['l']) for rid in problem.course_rooms[cid] for p in range(pid-1,d*problem.ppd,-1) if p in problem.course_periods[cid]])
-        #                 +y1decision>=1
-        #             )
+                    model.Add(
+                        sum([lvars[(cid,aid,rid,p)] for cid in problem.curricula[curricula_id] for aid in range(problem.courses[cid]['l']) for rid in problem.course_rooms[cid] for p in range(pid-1,d*problem.ppd,-1) if p in problem.course_periods[cid]])
+                        +y1decision>=1
+                    )
 
-        #             model.Add(
-        #                 sum([lvars[(cid,aid,rid,p)] for cid in problem.curricula[curricula_id] for aid in range(problem.courses[cid]['l']) for rid in problem.course_rooms[cid] for p in range(pid+1,d*problem.ppd+problem.ppd) if p in problem.course_periods[cid]])
-        #                 +y2decision>=1
-        #             )
+                    model.Add(
+                        sum([lvars[(cid,aid,rid,p)] for cid in problem.curricula[curricula_id] for aid in range(problem.courses[cid]['l']) for rid in problem.course_rooms[cid] for p in range(pid+1,d*problem.ppd+problem.ppd) if p in problem.course_periods[cid]])
+                        +y2decision>=1
+                    )
 
-        #             model.Add(
-        #                 y1decision+y2decision+y3decision>=1
-        #             )
+                    model.Add(
+                        y1decision+y2decision+y3decision>=1
+                    )
 
-        #             model.Add(
-        #                 sum([lvars[(cid,aid,rid,pid)] for cid in problem.curricula[curricula_id] for aid in range(problem.courses[cid]['l']) for rid in problem.course_rooms[cid] if pid in problem.course_periods[cid]])
-        #                 +time_windows[(curricula_id,pid)]>=1
-        #             ).OnlyEnforceIf(y3decision)
+                    model.Add(
+                        sum([lvars[(cid,aid,rid,pid)] for cid in problem.curricula[curricula_id] for aid in range(problem.courses[cid]['l']) for rid in problem.course_rooms[cid] if pid in problem.course_periods[cid]])
+                        +time_windows[(curricula_id,pid)]>=1
+                    ).OnlyEnforceIf(y3decision)
 
-        #             model.Add(
-        #                 time_windows[(curricula_id,pid)]==0
-        #             ).OnlyEnforceIf(y3decision.Not())
+                    model.Add(
+                        time_windows[(curricula_id,pid)]==0
+                    ).OnlyEnforceIf(y3decision.Not())
 
-        # # StudentMinMaxLoad
-        # for curricula_id in list(problem.curricula.keys()):
-        #     for d in range(problem.days):
-        #         for i in daily_lessons:
-        #             model.Add(
-        #                 -sum([lvars[(cid,aid,rid,pid)] for cid in problem.curricula[curricula_id] for aid in range(problem.courses[cid]['l']) for rid in problem.course_rooms[cid] for pid in range(d*problem.ppd,d*problem.ppd+problem.ppd) if pid in problem.course_periods[cid]])
-        #                 +daily_lectures_load[(curricula_id,d,i)]>=-(i-1)
-        #             )
+        # StudentMinMaxLoad
+        for curricula_id in list(problem.curricula.keys()):
+            for d in range(problem.days):
+                for i in daily_lessons:
+                    model.Add(
+                        -sum([lvars[(cid,aid,rid,pid)] for cid in problem.curricula[curricula_id] for aid in range(problem.courses[cid]['l']) for rid in problem.course_rooms[cid] for pid in range(d*problem.ppd,d*problem.ppd+problem.ppd) if pid in problem.course_periods[cid]])
+                        +daily_lectures_load[(curricula_id,d,i)]>=-(i-1)
+                    )
 
-        # for (cid,aid) in problem.lectures:
-        #     for pid in problem.course_periods[cid]:
-        #         if pid in problem.last_day_periods : continue
-        #         model.Add(
-        #             sum([lvars[(cid,aid,rid,pid)] * problem.rooms[rid]['bid'] for rid in problem.course_rooms[cid]])
-        #             +sum([lvars[(cid2,aid2,rid,pid+1)] * problem.rooms[rid]['bid'] for cid2 in [x for x in problem.curricula[problem.course_curricula[cid]] if x!=cid] for aid2 in range(problem.courses[cid2]['l']) for rid in problem.course_rooms[cid2] if pid+1 in problem.course_periods[cid2]])
-        #             +travel_distance[(cid,aid)]>=2
-        #         )
+        for (cid,aid) in problem.lectures:
+            for pid in problem.course_periods[cid]:
+                if pid in problem.last_day_periods : continue
+                model.Add(
+                    sum([lvars[(cid,aid,rid,pid)] * problem.rooms[rid]['bid'] for rid in problem.course_rooms[cid]])
+                    +sum([lvars[(cid2,aid2,rid,pid+1)] * problem.rooms[rid]['bid'] for cid2 in [x for x in problem.curricula[problem.course_curricula[cid]] if x!=cid] for aid2 in range(problem.courses[cid2]['l']) for rid in problem.course_rooms[cid2] if pid+1 in problem.course_periods[cid2]])
+                    +travel_distance[(cid,aid)]>=2
+                )
 
         # Objective value
         objective=[
             sum([working_days[(cid,i)]*abs(i-problem.courses[cid]['d']) for cid in list(problem.courses.keys()) for i in range(1,problem.courses[cid]['d'])]) # Min working days soft violation
-            # ,sum([isolated_lectures[(cid,aid)] for cid,aid in problem.lectures])
-            # ,sum([time_windows[(curricula_id,p)] for curricula_id in list(problem.curricula.keys()) for p in range(problem.P)])
-            # ,sum([daily_lectures_load[(curricula_id,d,i)] * (abs(i-problem.min_daily_lectures) if i<problem.min_daily_lectures else i-problem.max_daily_lectures) for curricula_id in list(problem.curricula.keys()) for d in range(problem.days) for i in daily_lessons])
-            # ,sum([travel_distance[(cid,aid)] for (cid,aid) in problem.lectures])
+            ,sum([isolated_lectures[(cid,aid)] for cid,aid in problem.lectures])
+            ,sum([time_windows[(curricula_id,p)] for curricula_id in list(problem.curricula.keys()) for p in range(problem.P)])
+            ,sum([daily_lectures_load[(curricula_id,d,i)] * (abs(i-problem.min_daily_lectures) if i<problem.min_daily_lectures else i-problem.max_daily_lectures) for curricula_id in list(problem.curricula.keys()) for d in range(problem.days) for i in daily_lessons])
+            ,sum([travel_distance[(cid,aid)] for (cid,aid) in problem.lectures])
         ]
 
         model.Minimize(sum(objective))
@@ -322,10 +322,12 @@ def udine_solver2(problem):
                 if pid not in problem.course_periods[cid] or pid not in problem.course_periods[cid2]: continue
                 model.Add(sum([lvars[(cid,aid,rid,pid)] for rid in list(problem.rooms.keys())])+sum([lvars[(cid2,aid2,rid,pid)] for aid2 in range(problem.courses[cid2]['l']) for rid in problem.rooms.keys()])<=1)
 
+    daily_lectures=[x for x in range(problem.days) if x!=problem.min_daily_lectures and x!=problem.max_daily_lectures]
     working_days={(cid,i):model.NewBoolVar(name=f'working_days_{cid}_{i}') for cid in list(problem.courses.keys()) for i in range(1,problem.courses[cid]['d'])}
     isolated_lectures={(cid,aid):model.NewBoolVar(name=f'isolated_lecture_{cid}_{aid}') for (cid,aid) in problem.lectures}
     time_windows={(curr_id,pid):model.NewBoolVar(name=f'time_windows_{curr_id}_{pid}') for curr_id in list(problem.curricula.keys()) for pid in range(problem.P) if pid not in problem.first_day_periods and pid not in problem.last_day_periods}
-    room_stability={(cid,aid):model.NewBoolVar(name=f'room_stability_{cid}_{aid}') for cid in list(problem.courses.keys()) for aid in range(problem.courses[cid]['l'])}
+    room_stability={(cid,aid):model.NewBoolVar(name=f'room_stability_{cid}_{aid}') for (cid,aid) in problem.lectures}
+    student_min_max_load={(d,i):model.NewBoolVar(name=f'daily_lectures_{d}_{i}') for d in range(problem.days) for i in daily_lectures}
 
     for cid in list(problem.courses.keys()):
         for i in range(1,problem.courses[cid]['d']):
@@ -386,18 +388,50 @@ def udine_solver2(problem):
 
     for (cid,aid) in problem.lectures:
         for pid in problem.course_periods[cid]:
+            if pid in problem.first_day_periods or pid in problem.last_day_periods: 
+                continue
+            y1decision=model.NewBoolVar(name=f'stability_decision_{cid}_{aid}')
+            y2decision=model.NewBoolVar(name=f'stability_decision_2_{cid}_{aid}')
+            y3decision=model.NewBoolVar(name=f'stabilty_decision_3_{cid}_{aid}')
+
             model.Add(
                 sum([lvars[(cid,aid,rid,pid)]*problem.rooms[rid]['bid'] for rid in problem.course_rooms[cid]])
-                +sum([lvars[(cid2,aid2,rid,pid+1)]*problem.rooms[rid]['bid'] for cid2 in problem.curricula[problem.course_curricula[cid]] for aid2 in range(problem.courses[cid2]['l']) for rid in problem.course_rooms[cid2] if pid+1 in problem.course_periods[cid2]])
-                +room_stability[(cid,aid)]>=2
+                +y1decision>=1
             )
 
+            model.Add(
+                sum([lvars[(cid2,aid2,rid,pid+1)]*problem.rooms[rid]['bid'] for cid2 in problem.curricula[problem.course_curricula[cid]] for aid2 in range(problem.courses[cid2]['l']) for rid in problem.course_rooms[cid2] if pid+1 in problem.course_periods[cid2]])
+                +y2decision>=1    
+            )
+
+            # model.Add(y1decision!=y2decision)
+            model.Add(
+                y1decision
+                +y2decision
+                +y3decision>=2
+            )
+
+            model.Add(
+                room_stability[(cid,aid)]==1
+            ).OnlyEnforceIf(y3decision)
+
+    
+    
+    for d in range(problem.days):
+        for i in daily_lectures:
+            model.Add(
+                -sum([lvars[(cid,aid,rid,pid)] for (cid,aid) in problem.lectures for rid in problem.rooms.keys() for pid in range(d*problem.ppd,d*problem.ppd+problem.ppd) if pid in problem.course_periods[cid]])
+                +student_min_max_load[(d,i)]<=-(i-1)
+            )
 
     objective=[
         sum([working_days[(cid,i)]*(problem.courses[cid]['d']-i) for cid in list(problem.courses.keys()) for i in range(1,problem.courses[cid]['d'])])
         ,sum([isolated_lectures[(cid,aid)] for (cid,aid) in problem.lectures])
         ,sum([time_windows[(curricula_id,pid)] for curricula_id in list(problem.curricula.keys()) for pid in range(problem.P) if pid not in problem.first_day_periods and pid not in problem.last_day_periods])
         ,sum([room_stability[(cid,aid)] for (cid,aid) in problem.lectures])
+        ,sum([lvars[(cid,aid,rid,pid)] * (rid not in problem.course_rooms[cid]) for (cid,aid) in problem.lectures for rid in problem.rooms.keys() for pid in problem.course_periods[cid]])
+        ,sum([student_min_max_load[(d,i)]*(problem.min_daily_lectures-i if i<problem.min_daily_lectures else i-problem.max_daily_lectures) for d in range(problem.days) for i in daily_lectures])
+        ,sum([lvars[(cid,aid,rid,pid)] * (problem.courses[cid]['s']-problem.rooms[rid]['c'] if problem.courses[cid]['s']-problem.rooms[rid]['c']>0 else 0) for (cid,aid,rid,pid) in lvars]) # Student-room capacity soft constraint
     ]
 
     model.Minimize(sum(objective))
@@ -413,8 +447,39 @@ def udine_solver2(problem):
                 print(f'c_{cid}_{aid}=>({rid},{pid})')
     
 
-def udine_solver3():
-    pass
+def udine_solver3(problem):
+    model=cpx.CpoModel()
+    lvars={(cid,aid,rid,pid):model.binary_var(name=f'lvars_{cid}_{aid}_{rid}_{pid}') for (cid,aid) in problem.lectures for rid in problem.rooms.keys() for pid in problem.course_periods[cid]}
+
+    for (cid,aid) in problem.lectures:
+        model.add(sum([lvars[(cid,aid,rid,pid)] for rid in problem.course_rooms[cid] for pid in problem.course_periods[cid]])==1)
+    
+    for pid in list(problem.rooms.keys()):
+        model.add(sum([lvars[(cid,aid,rid,pid)] for (cid,aid) in problem.lectures for rid in list(problem.rooms.keys()) if pid in problem.course_periods[cid]])<=problem.R)
+    
+    for cid in list(problem.courses.keys()):
+        for pid in problem.course_periods[cid]:
+            model.add(sum([lvars[(cid,aid,rid,pid)] for aid in range(problem.courses[cid]['l']) for rid in list(problem.rooms.keys())])<=1)
+    
+    for (cid,aid) in problem.lectures:
+        for cid2 in problem.G.neighbors(cid):
+            for pid in range(problem.P):
+                if pid in problem.course_periods[cid] or pid in problem.course_periods[cid2]:
+                    continue
+                model.add(
+                    sum([lvars[(cid,aid,rid,pid)] for rid in problem.rooms.keys()]) + sum([lvars[(cid2,aid2,rid,pid)] for aid2 in range(problem.courses[cid2]['l']) for rid in problem.rooms.keys() if pid in problem.course_periods[cid]])<=1
+                )
+    
+    solver=model.solve()
+    esol={}
+    if solver:
+        for (cid,aid,rid,pid),dvar in lvars.items():
+            if solver[dvar]==1:
+                esol[(cid,aid)]=(rid,pid)
+    return esol
+
+
+    
 
 
 def scenario1():
