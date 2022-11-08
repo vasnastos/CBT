@@ -1,2 +1,0 @@
-1->NPS:https://www.dit.uoi.gr/education.php?id=8
-2->PPS:https://www.dit.uoi.gr/education.php?id=2
