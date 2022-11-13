@@ -1,8 +1,6 @@
 #include "solution.hpp"
 
-Solution::Solution(Problem *pr):problem(pr) {
-
-}
+Solution::Solution(Problem *pr):problem(pr) {}
 
 Solution::~Solution() {}
 
@@ -43,7 +41,7 @@ void Solution::read(const std::string &filename)
         {
             data.emplace_back(word);
         }
-        this->_solution.emplace_back(std::make_pair(data[1],Sol(std::stoi(data[2]),std::stoi(data[3]))));
+        this->_solution.emplace_back(std::make_pair(std::stoi(data[1]),Sol(std::stoi(data[2]),std::stoi(data[3]))));
     }
     fs.close();
 }
@@ -51,10 +49,7 @@ void Solution::read(const std::string &filename)
 std::ostream &operator<<(std::ostream &os,const Solution &solution)
 {
     os<<"Events"<<std::endl;
-    for(const auto &event:solution.problem->events)
-    {
-        os<<std::string(event)<<std::endl;
-    }
+    os<<*solution.problem;
     os<<std::endl<<std::endl;
     return os;
 }

@@ -20,6 +20,7 @@ bool Course::operator==(const Course &course)const {return this->id==course.id;}
 void Course::add_lab_used_hour(int number_of_hours) {this->lab_hours_in_use+=number_of_hours;}
 void Course::set_curricula_type(const CURR &curricula_type) {this->curricula_type=curricula_type;}
 int Course::get_lab_hours_in_use()const {return  this->lab_hours_in_use;}
+int Course::get_lab_hours_used()const {return this->lab_hours_in_use;}
 CURR Course::get_curricula()const {return this->curricula_type;}
 
 Room::Room(std::string room_id,std::string room_type,int room_capacity):id(room_id),type(room_type),capacity(room_capacity) {}
@@ -36,9 +37,8 @@ void Lecturer::set_email(std::string email) {this->email=email;}
 void Lecturer::set_username(std::string username) {this->username=username;}
 std::string Lecturer::get_name()const {return this->name;}
 std::string Lecturer::get_email()const {return this->email;}
-std::string Lecturer::get_usename()const {return this->username;}
-std::shared_ptr<std::vector <std::pair <int,int>>>  Lecturer::get_lectures() {return std::make_shared<std::vector <std::pair<int,int>>>(this->lectures);}     
-void Lecturer::add_lecture(std::pair<int,int> &lecture) {this->lectures.emplace_back(lecture);}
+std::string Lecturer::get_usename()const {return this->username;}   
+void Lecturer::add_event(const int &event_id) {this->events.emplace_back(event_id);}
 
 
 Event::Event(Course *course_obj,int lid,TYPE t):course(course_obj),lecture_id(lid),type(t) {}
@@ -61,16 +61,19 @@ std::string Event::get_type_str()const
         break;
     }
 }
+
 TYPE Event::get_type()const 
 {
     return this->type;
 }
+
 Event::operator std::string()const
 {
     std::stringstream ss;
-    ss<<this->course->get_name()<<"("<<this->get_type_str()<<")";
+    ss<<this->course->get_name()<<"("<<this->get_type_str()<<") "<<this->lecturer->get_name();
     return ss.str();
 }
+
 bool Event::same_curricula(const Event &e)
 {
     if(this->course->get_semester()==e.course->get_semester())
@@ -84,3 +87,64 @@ bool Event::same_curricula(const Event &e)
     }
     return false;
 }
+
+void Event::setLecturer(Lecturer &newlecturer)
+{
+    this->lecturer=&newlecturer;
+}
+
+bool Event::is_events_course(const Course &ecourse)const
+{
+    return *this->course==ecourse;
+}
+
+int Event::get_lecture_id()const
+{
+    return this->lecture_id;
+}
+
+TYPE get_course_type(const std::string &course_type)
+{
+    // th,tut,l
+    if(course_type=="th")
+    {
+        return TYPE::THEORY;
+    }
+    else if(course_type=="tut")
+    {
+        return TYPE::TUTORING;
+    }
+    else
+    {
+        return TYPE::LABORATORY;
+    }
+}
+
+CURR get_curricula_type(const std::string &curr_type)
+{
+    if(curr_type=="ΛΟΓΙΣΜΙΚΟ")
+    {
+        return CURR::SOFTWARE;
+    }
+    else if(curr_type=="ΕΥΦΥΗ ΣΥΣΤΗΜΑΤΑ ΚΑΙ ΕΦΑΡΜΟΓΕΣ")
+    {
+        return CURR::AI;
+    }
+    else if(curr_type=="YΠΟΛΟΓΙΣΤΙΚΑ ΣΥΣΤΗΜΑΤΑ")
+    {
+        return CURR::COMPUTATIONAL_SYSTEMS;
+    }
+    else if(curr_type=="ΤΗΛΕΠΙΚΟΙΝΩΝΙΕΣ")
+    {
+        return CURR::TELECOMMUNICATIONS;
+    }
+    else if(curr_type=="ΔΙΚΤΥΑ")
+    {
+        return CURR::NETWORKING;
+    }
+    else
+    {
+        return CURR::SEMESTER;
+    }
+}
+

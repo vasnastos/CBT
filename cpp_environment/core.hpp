@@ -3,6 +3,8 @@
 #include <memory>
 #include <tuple>
 #include <sstream>
+#include <filesystem>
+namespace fs=std::filesystem;
 
 enum class TYPE
 {
@@ -27,34 +29,6 @@ enum class CURR
     NETWORKING
 };
 
-CURR get_curricula_type(const std::string &curr_type)
-{
-    if(curr_type=="ΛΟΓΙΣΜΙΚΟ")
-    {
-        return CURR::SOFTWARE;
-    }
-    else if(curr_type=="ΕΥΦΥΗ ΣΥΣΤΗΜΑΤΑ ΚΑΙ ΕΦΑΡΜΟΓΕΣ")
-    {
-        return CURR::AI;
-    }
-    else if(curr_type=="YΠΟΛΟΓΙΣΤΙΚΑ ΣΥΣΤΗΜΑΤΑ")
-    {
-        return CURR::COMPUTATIONAL_SYSTEMS;
-    }
-    else if(curr_type=="ΤΗΛΕΠΙΚΟΙΝΩΝΙΕΣ")
-    {
-        return CURR::TELECOMMUNICATIONS;
-    }
-    else if(curr_type=="ΔΙΚΤΥΑ")
-    {
-        return CURR::NETWORKING;
-    }
-    else
-    {
-        return CURR::SEMESTER;
-    }
-}
-
 class Room
 {
     std::string id;
@@ -62,11 +36,11 @@ class Room
     int capacity;
     public:
         Room(std::string room_id,std::string room_type,int room_capacity);
-        ~Room() {}
+        ~Room();
 
-        std::string get_id()const {return this->id;}
-        std::string get_type()const {return this->type;}
-        int get_capacity()const {return this->capacity;}
+        std::string get_id()const;
+        std::string get_type()const;
+        int get_capacity()const;
 };
 
 class Course
@@ -85,6 +59,7 @@ class Course
         ~Course();
 
         void add_lab_used_hour(int number_of_hours);
+        int get_lab_hours_used()const;
         void set_curricula_type(const CURR &curricula_type);
 
         std::string get_id()const;
@@ -105,9 +80,6 @@ class Course
         int get_lab_hours_in_use()const;
 
         bool operator==(const Course &course)const;
-
-        // std::vector <std::pair <int,int>> get_theory_lectures()const;
-        // std::vector <std::pair <int,int>> get_laboratory_lectures()const;
 };
 
 class Lecturer
@@ -116,9 +88,10 @@ class Lecturer
         std::string name;
         std::string email;
         std::string username;
-        std::vector <int,int> lectures;
 
     public:
+        std::vector <int> events;
+
         Lecturer(std::string lecturer_name,std::string lecturer_email,std::string lecturer_username);
         ~Lecturer();
 
@@ -130,20 +103,27 @@ class Lecturer
         std::string get_email()const;
         std::string get_usename()const;
         
-        void add_lecture(std::pair<int,int> &lecture);
-        std::shared_ptr<std::vector <std::pair <int,int>>>  get_lectures();     
+        void add_event(const int &event_id);     
 };
 
 class Event
 {
     Course *course;
+    Lecturer *lecturer;
     int lecture_id;
     TYPE type; // th,l,tut
     public:
         Event(Course *course_obj,int lid,TYPE t);
-        ~Event() {}
+        ~Event();
+
+        void setLecturer(Lecturer &newlecturer);
         bool same_curricula(const Event &e);
         std::string get_type_str()const;
+        int get_lecture_id()const;
         TYPE get_type()const;
         operator std::string()const;
+        bool is_events_course(const Course &ecourse)const;
 };
+
+CURR get_curricula_type(const std::string &curr_type);
+TYPE get_course_type(const std::string &course_type);

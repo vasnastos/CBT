@@ -5,7 +5,9 @@
 #include <sstream>
 #include <fstream>
 #include <algorithm>
+#include <windows.h>
 #include "graph.hpp"
+
 
 class Problem
 {
@@ -14,12 +16,12 @@ class Problem
         std::vector <Course> courses;
         std::vector <Lecturer> lecturers;
         std::vector <Room> rooms;
-        std::map <std::string,std::vector <int>> curriculas;
+        std::map <std::string,std::vector <std::string>> curriculas;
+        std::map <std::string,std::vector <std::tuple<std::string,int,std::string>>> assignments;
         int days,periods_per_day,semesters;
-        void course_lecturer_correspondence(const std::string course_name,const std::string &lecturer_name,bool is_tutoring=false);
-        void course_lecturer_correspondence(const Course &course,const std::string &lecturer,bool is_tutoring=false);
-        void course_lecture_correspondence(const std::string &course_name,const int &lecture_id,const std::string &lecturer);
-    
+        void course_lecturer_correspondence(const std::string &course_name,const std::string &lecturer_name,const int &number_of_lectures,const std::string &type_of_lecture);
+        void events_assignment();
+        
     public:
         std::vector <Event> events;
         Graph G;
@@ -41,4 +43,7 @@ class Problem
         double lecturers_availability()const;
         double room_suitability()const;
         friend std::ostream &operator<<(std::ostream &os,const Problem &problem);
+
+        static void change_problem_path(const std:: vector <std::string> &files);
+        static std::string path_to_datasets;
 };
