@@ -102,38 +102,18 @@ void Problem::read_instance(std::string dataset_name)
         else if(category=="CURRICULA")
         {
             std::string type=data[0];
-            for(int i=0,t=data.size();i<t;i++)
+            for(int i=1,t=data.size();i<t;i++)
             {
                 std::find_if(this->courses.begin(),this->courses.end(),[&](const Course &c) {return c.get_id()==data[i];})->set_curricula_type(get_curricula_type(data[0]));
+                this->curriculas[data[0]].emplace_back(data[i]);
             }
         }
     }
-    this->generate_lectures();
     this->create_events();
     
     this->semesters=std::stoi(configurations["semester"]);
     this->days=std::stoi(configurations["days"]);
     this->periods_per_day=std::stoi(configurations["periods"]);
-}
-
-void Problem::generate_lectures()
-{
-    // Split data in to three categories of lecture types
-    for(int i=0;i<this->number_of_courses();i++)
-    {
-        for(int j=0,t=this->courses[i].get_theory_hours();j<t;j++)
-        {
-            this->theory_lectures.emplace_back(std::make_pair(i,j));
-        }
-        for(int j=this->courses[i].get_theory_hours();j<this->courses[i].get_theory_hours()+this->courses[i].get_tutoring_hours();j++)
-        {
-            this->tutoring_lectures.emplace_back(std::make_pair(i,j));
-        }
-        for(int j=this->courses[i].get_theory_hours()+this->courses[i].get_tutoring_hours(),t=this->courses[i].get_theory_hours()+this->courses[i].get_tutoring_hours()+this->courses[i].get_lab_hours();i<t;i++)
-        {
-            this->lab_lectures.emplace_back(std::make_pair(i,j));
-        }
-    }
 }
 
 void Problem::create_graph()
@@ -144,7 +124,11 @@ void Problem::create_graph()
         {
             if(this->events[i].same_curricula(this->events[j]))
             {
-                if(this->events[i].get_type()==TYPE::THEORY && this->events[i].get_type()==TYPE::THEORY)
+                if(this->events[i].get_type()==TYPE::THEORY && this->events[j].get_type()==TYPE::THEORY)
+                {
+                    this->G.add_edge(i,j);
+                }
+                else if((this->events[i].get_type()==TYPE::THEORY && this->events[j].get_type()==TYPE::LABORATORY) || (this->events[i].get_type()==TYPE::LABORATORY && this->events[j].get_type()==TYPE::THEORY))
                 {
                     this->G.add_edge(i,j);
                 }

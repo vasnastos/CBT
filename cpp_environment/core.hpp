@@ -27,6 +27,33 @@ enum class CURR
     NETWORKING
 };
 
+CURR get_curricula_type(const std::string &curr_type)
+{
+    if(curr_type=="ΛΟΓΙΣΜΙΚΟ")
+    {
+        return CURR::SOFTWARE;
+    }
+    else if(curr_type=="ΕΥΦΥΗ ΣΥΣΤΗΜΑΤΑ ΚΑΙ ΕΦΑΡΜΟΓΕΣ")
+    {
+        return CURR::AI;
+    }
+    else if(curr_type=="YΠΟΛΟΓΙΣΤΙΚΑ ΣΥΣΤΗΜΑΤΑ")
+    {
+        return CURR::COMPUTATIONAL_SYSTEMS;
+    }
+    else if(curr_type=="ΤΗΛΕΠΙΚΟΙΝΩΝΙΕΣ")
+    {
+        return CURR::TELECOMMUNICATIONS;
+    }
+    else if(curr_type=="ΔΙΚΤΥΑ")
+    {
+        return CURR::NETWORKING;
+    }
+    else
+    {
+        return CURR::SEMESTER;
+    }
+}
 
 class Room
 {
@@ -106,35 +133,6 @@ class Lecturer
         void add_lecture(std::pair<int,int> &lecture);
         std::shared_ptr<std::vector <std::pair <int,int>>>  get_lectures();     
 };
-
-
-CURR get_curricula_type(const std::string &curr_type)
-{
-    if(curr_type=="ΛΟΓΙΣΜΙΚΟ")
-    {
-        return CURR::SOFTWARE;
-    }
-    else if(curr_type=="ΕΥΦΥΗ ΣΥΣΤΗΜΑΤΑ ΚΑΙ ΕΦΑΡΜΟΓΕΣ")
-    {
-        return CURR::AI;
-    }
-    else if(curr_type=="YΠΟΛΟΓΙΣΤΙΚΑ ΣΥΣΤΗΜΑΤΑ")
-    {
-        return CURR::COMPUTATIONAL_SYSTEMS;
-    }
-    else if(curr_type=="ΤΗΛΕΠΙΚΟΙΝΩΝΙΕΣ")
-    {
-        return CURR::TELECOMMUNICATIONS;
-    }
-    else if(curr_type=="ΔΙΚΤΥΑ")
-    {
-        return CURR::NETWORKING;
-    }
-    else
-    {
-        return CURR::SEMESTER;
-    }
-}
 
 class Event
 {

@@ -8,6 +8,7 @@ int Graph::number_of_edges() {return this->_edges.size();}
 void Graph::add_node(const int &node) {this->_nodes.insert(std::make_pair(node,std::vector <int>()));}
 void Graph::add_edge(const int &node1,const int &node2)
 {
+    if(std::find_if(this->_edges.begin(),this->_edges.end(),[&](const std::pair <int,int> &p) {return (p.first==node1 && p.second==node2) || (p.first==node2 && p.second==node1);})!=this->_edges.end()) return;
     this->_edges.emplace_back(std::make_pair(node1,node2));
 }
 void Graph::clear()

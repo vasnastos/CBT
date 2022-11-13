@@ -18,4 +18,5 @@ class Solution
         int compute_cost()const;
         void save();
         void read(const std::string &filename);
+        friend std::ostream &operator<<(std::ostream &os,const Solution &solution);
 };

@@ -77,7 +77,7 @@ bool Event::same_curricula(const Event &e)
     {
         if(this->course->get_semester()>=7)
         {
-            return int(this->course->get_curricula())==int(e.course.get_curricula());
+            return int(this->course->get_curricula())==int(e.course->get_curricula());
         }
         else
         return true;

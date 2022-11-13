@@ -15,17 +15,13 @@ class Problem
         std::vector <Lecturer> lecturers;
         std::vector <Room> rooms;
         std::map <std::string,std::vector <int>> curriculas;
-        std::vector <Event> events;
         int days,periods_per_day,semesters;
-        void generate_lectures();
         void course_lecturer_correspondence(const std::string course_name,const std::string &lecturer_name,bool is_tutoring=false);
         void course_lecturer_correspondence(const Course &course,const std::string &lecturer,bool is_tutoring=false);
         void course_lecture_correspondence(const std::string &course_name,const int &lecture_id,const std::string &lecturer);
     
     public:
-        std::vector <std::pair<int,int>> theory_lectures;
-        std::vector <std::pair<int,int>> tutoring_lectures;
-        std::vector <std::pair <int,int>> lab_lectures;
+        std::vector <Event> events;
         Graph G;
 
         Problem();
