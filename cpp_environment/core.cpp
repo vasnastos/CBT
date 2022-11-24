@@ -41,7 +41,7 @@ std::string Lecturer::get_usename()const {return this->username;}
 void Lecturer::add_event(const int &event_id) {this->events.emplace_back(event_id);}
 
 
-Event::Event(Course *course_obj,int lid,TYPE t):course(course_obj),lecture_id(lid),type(t) {}
+Event::Event(Course *course_obj,int lid,TYPE t):course(course_obj),lecture_id(lid),type(t),lecturer(nullptr) {}
 Event::~Event() {}
 std::string Event::get_type_str()const
 {
@@ -70,7 +70,7 @@ TYPE Event::get_type()const
 Event::operator std::string()const
 {
     std::stringstream ss;
-    ss<<this->course->get_name()<<"("<<this->get_type_str()<<") "<<this->lecturer->get_name();
+    ss<<this->course->get_name()<<"("<<this->get_type_str()<<") "<<std::boolalpha<<(this->lecturer==nullptr);
     return ss.str();
 }
 
@@ -88,9 +88,9 @@ bool Event::same_curricula(const Event &e)
     return false;
 }
 
-void Event::setLecturer(Lecturer &newlecturer)
+void Event::setLecturer(Lecturer *newlecturer)
 {
-    this->lecturer=&newlecturer;
+    this->lecturer=newlecturer;
 }
 
 bool Event::is_events_course(const Course &ecourse)const

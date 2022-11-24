@@ -86,7 +86,8 @@ void Problem::read_instance(std::string dataset_name)
 
         if(category=="COURSES")
         {
-            std::for_each(data[1].begin(),data[1].end(),[](char &c) {c=::toupper(c);});
+            data[1]=upper(data[1]);
+            std::cout<<data[1]<<std::endl;
             this->courses.emplace_back(Course(data[0],data[1],std::stoi(data[2]),std::stoi(data[3]),std::stoi(data[4]),std::stoi(data[5]),std::stoi(data[6])));
             this->curriculas["semester_"+data[2]].emplace_back(data[1]);
             if(this->courses[this->courses.size()-1].get_semester()<7)
@@ -106,18 +107,13 @@ void Problem::read_instance(std::string dataset_name)
         else if(category=="ASSIGNMENTS")
         {
             // # lesson,lecturer,hours of each lab,number of labs
+            data[0]=upper(data[0]);
             this->course_lecturer_correspondence(data[0],data[1],std::stoi(data[3]),data[4]);
         }
         else if(category=="CURRICULA")
         {
             for(int i=1,t=data.size();i<t;i++)
             {
-                // for(auto &x:this->courses)
-                // {
-                //     std::cout<<x.get_id()<<""<<data[i]<<std::boolalpha<<(x.get_id()==data[i])<<std::endl;
-                // }
-                // system("pause");
-                exit(EXIT_SUCCESS);
                 std::find_if(this->courses.begin(),this->courses.end(),[&](const Course &c) {return c.get_id()==data[i];})->set_curricula_type(get_curricula_type(data[0]));
                 this->curriculas[data[0]].emplace_back(data[i]);
             }
@@ -127,6 +123,7 @@ void Problem::read_instance(std::string dataset_name)
 
     this->create_events();
     this->events_assignment();
+    
     this->semesters=std::stoi(configurations["semesters"]);
     this->days=std::stoi(configurations["days"]);
     this->periods_per_day=std::stoi(configurations["periods"]);
@@ -184,13 +181,14 @@ void Problem::events_assignment()
         auto lecturer=std::find_if(this->lecturers.begin(),this->lecturers.end(),[&](const Lecturer &lecturer) {return lecturer.get_name()==assignment_pair.first;});
         for(const auto &assignment:assignment_pair.second)
         {   
+            std::cout<<std::get<0>(assignment)<<" "<<std::get<1>(assignment)<<" "<<std::get<2>(assignment)<<std::endl;
             auto course=std::find_if(this->courses.begin(),this->courses.end(),[&](const Course &c) {return std::get<0>(assignment)==c.get_name();});
             auto course_type=get_course_type(std::get<2>(assignment));
-            if(std::get<2>(assignment)=="th" || std::get<2>(assignment)=="tut")
+            if(course_type==TYPE::THEORY || course_type==TYPE::TUTORING)
             {
-                for(int k=0;k<std::get<1>(assignment);k++)
+                for(int k=0;k<int(std::get<1>(assignment));k++)
                 {
-                    std::find_if(this->events.begin(),this->events.end(),[&](const Event &event) {return event.get_type()==course_type && event.get_lecture_id()==k && event.is_events_course(*course);})->setLecturer(*lecturer);
+                    std::find_if(this->events.begin(),this->events.end(),[&](const Event &event) {return event.get_type()==course_type && event.get_lecture_id()==k && event.is_events_course(*course);})->setLecturer(&this->lecturers[lecturer-this->lecturers.begin()]);
                     lecturer->add_event(std::find_if(this->events.begin(),this->events.end(),[&](const Event &event) {return event.get_type()==course_type && event.get_lecture_id()==k && event.is_events_course(*course);})-this->events.begin());
                 }
             }
@@ -198,7 +196,7 @@ void Problem::events_assignment()
             {
                 for(int hour=course->get_lab_hours_in_use();hour<course->get_lab_hours_in_use()+std::get<1>(assignment);hour++)
                 {
-                    std::find_if(this->events.begin(),this->events.end(),[&](const Event &event) {return event.get_type()==course_type && event.get_lecture_id()==hour && event.is_events_course(*course);})->setLecturer(*lecturer);
+                    std::find_if(this->events.begin(),this->events.end(),[&](const Event &event) {return event.get_type()==course_type && event.get_lecture_id()==hour && event.is_events_course(*course);})->setLecturer(&this->lecturers[lecturer-this->lecturers.begin()]);
                     lecturer->add_event(std::find_if(this->events.begin(),this->events.end(),[&](const Event &event) {return event.get_type()==course_type && event.get_lecture_id()==hour && event.is_events_course(*course);})-this->events.begin());
                 }
                 course->add_lab_used_hour(std::get<1>(assignment));
@@ -223,9 +221,10 @@ std::ostream &operator<<(std::ostream &os,const Problem &problem)
     os<<"Curricula:"<<problem.number_of_curricula()<<std::endl;
     os<<"Rooms:"<<problem.number_of_rooms()<<std::endl<<std::endl;
     os<<"===== Events ======"<<std::endl;
+    os<<problem.events.size()<<std::endl;
     for(const auto &event:problem.events)
     {
-        os<<std::string(event)<<std::endl;
+        os<<"E:"<<std::string(event)<<std::endl;
     }
     os<<std::endl<<std::endl;
     return os;

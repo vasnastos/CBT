@@ -116,7 +116,7 @@ class Event
         Event(Course *course_obj,int lid,TYPE t);
         ~Event();
 
-        void setLecturer(Lecturer &newlecturer);
+        void setLecturer(Lecturer *newlecturer);
         bool same_curricula(const Event &e);
         std::string get_type_str()const;
         int get_lecture_id()const;

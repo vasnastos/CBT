@@ -19,7 +19,10 @@ std::string trim(std::string &s)
     return s;
 }
 
-// static inline void upper(std::string &s)
-// {
-//     std::for_each(s.begin(),s.end(),[](unsigned char &c) {c=::toupper(c);});
-// }
+std::string upper(const std::string &s)
+{
+    std::string newstring=s;
+    std::for_each(newstring.begin(),newstring.end(),[](char &c) {c=::toupper(c);});
+    std::cout<<newstring<<std::endl;
+    return newstring;
+}
