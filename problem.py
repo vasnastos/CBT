@@ -199,7 +199,7 @@ class Problem:
     def teachers_unavailability(self):
         pass
     
-    def random_unavailabilities(self):
+    def random_period_unavailabilities(self):
         rows=[]
         headers=['LECTURER']+[f'P{i+1}' for i in range(self.P)]
         for lecturer_name,_ in self.lecturer_events.items():
@@ -228,7 +228,15 @@ class Problem:
            
 if __name__=='__main__':
     problem=Problem()
+    writer=pd.ExcelWriter(path=os.path.join('','Datasets','dit_datasets','period_unavailabilities.xlsx'),mode='w')
+    problem.random_room_unavailabilities().to_excel(excel_writer=writer)
+    writer.close()
+    del writer
 
+    writer=pd.ExcelWriter(path=os.path.join('','Datasets','dit_datasets','room_unavailabilities.xlsx'),mode='w')
+    problem.random_room_unavailabilities().to_excel(excel_writer=writer)
+    writer.close()
+    del writer
 
 # 1. Προσθήκη καταννεμημένων και παράλληλων συστημάτων
 # 2. Δημιουργία σελίδας αντιστοίχισης μαθημάτων
