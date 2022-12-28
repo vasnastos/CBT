@@ -105,9 +105,11 @@ class Lecturer:
                 if [True for period1,period2 in zip(periods[:-1],periods[1:]) if self.period_restrictions.loc[:,[f'P{period1}',f'P{period2}']].sum(axis=1)==0].count(True)>self.number_of_labs():
                     break
     
+    def __eq__(self,other_name) -> bool:
+        return self.name==other_name
+
     def __str__(self):
           return f'Name:{self.name}\nEmail:{self.email}\nId:{self.id}\nEvents:{self.events}\nRestrictions\n{self.period_restrictions.to_string(index=False)}'   
-
 
 class Problem:  
     path_to_datasets=os.path.join('','Datasets','dit_datasets','dit_winter_pregraduate.txt')
@@ -216,7 +218,7 @@ class Problem:
                 if category=="COURSES":
                     self.courses.append(Course(data[0].strip(),data[1].strip().upper(),int(data[2]),int(data[3]),int(data[4]),int(data[5]),int(data[6]),0))
                 elif category=="LECTURERS":
-                    self.lecturers[data[0]]={"email":data[1],"username":data[2],"courses":list()}
+                    self.lecturers.append(Lecturer(data[0].strip(),data[1].strip(),data[2].strip()))
                 elif category=="ROOMS":
                     self.rooms.append(tuple(data))
                 elif category=="ASSIGNMENTS":
@@ -373,7 +375,7 @@ def scenario1():
 
 def scenario2():
     problem=Problem()
-    # problem.per_lecturer()
+    problem.per_lecturer()
 
 
 if __name__=='__main__':
